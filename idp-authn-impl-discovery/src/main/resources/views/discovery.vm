@@ -1,0 +1,35 @@
+#set ($flowMap = $authenticationContext.getPotentialFlows())
+<!DOCTYPE html>
+<html>
+  #set ($discoFlowId = $authenticationContext.getAttemptedFlow().getId())
+  <head>
+    <meta charset="utf-8">
+    <title>#springMessageText("idp.title", "Web Login Service")</title>
+    <link rel="stylesheet" type="text/css" href="$request.getContextPath()/css/main.css">
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="container">
+        <header>
+          <img src="$request.getContextPath()#springMessage("idp.logo")" alt="#springMessageText("idp.logo.alt-text", "logo")">
+        </header>
+        <div class="content">
+          <div class="column one">
+            #foreach ($mapEntry in $flowMap.entrySet())
+              #if ($mapEntry.key != $discoFlowId)
+                #set ($authnFlow = $mapEntry.key + ".message")
+                #set ($link = $flowExecutionUrl + "&j_authnflow=" + $mapEntry.key + "&_eventId_proceed=_eventId_proceed")
+                <p><a href="$link">#springMessageText($authnFlow, $mapEntry.key)</a></p>
+              #end
+            #end
+          </div>
+        </div>
+      </div>
+      <footer>
+        <div class="container container-footer">
+          <p class="footer-text">#springMessageText("idp.footer", "Insert your footer text here.")</p>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

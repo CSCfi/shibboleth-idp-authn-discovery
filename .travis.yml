@@ -1,0 +1,13 @@
+language: java
+
+jdk:
+  - openjdk7
+
+script:
+  mvn clean package
+
+after_failure:
+  - cat target/surefire-reports/*.txt
+
+after_success:
+  - mvn clean cobertura:cobertura coveralls:report
