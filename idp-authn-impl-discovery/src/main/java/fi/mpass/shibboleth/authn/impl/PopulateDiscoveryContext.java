@@ -49,8 +49,8 @@ import net.shibboleth.utilities.java.support.component.ComponentInitializationEx
 import net.shibboleth.utilities.java.support.logic.Constraint;
 
 /**
- * This actions populates {@link AuthenticationDiscoveryContext} and attaches it as a subcontext of {@link
- * AuthenticationContext}.
+ * This actions populates {@link AuthenticationDiscoveryContext} and attaches it as a subcontext of
+ * {@link AuthenticationContext}.
  */
 public class PopulateDiscoveryContext extends AbstractExtractionAction {
 
@@ -63,7 +63,7 @@ public class PopulateDiscoveryContext extends AbstractExtractionAction {
 
     /** The list of flow ids to be ignored from the discovey context. */
     private List<String> ignoredFlows;
-    
+
     /** The complementary information for the authentication flows. */
     private Properties additionalInfo;
 
@@ -82,9 +82,10 @@ public class PopulateDiscoveryContext extends AbstractExtractionAction {
             throw new ComponentInitializationException("The additional info cannot be null");
         }
     }
-    
+
     /**
      * Set the complementary information for the authentication flows.
+     * 
      * @param properties What to set.
      */
     public void setAdditionalInfo(final Properties properties) {
@@ -123,6 +124,7 @@ public class PopulateDiscoveryContext extends AbstractExtractionAction {
         final AuthenticationDiscoveryContext discoveryContext =
                 authenticationContext.getSubcontext(AuthenticationDiscoveryContext.class, true);
 
+        discoveryContext.getMethodsByTag().clear();
         final List<AuthenticationMethodsByTag> methodsByTag = discoveryContext.getMethodsByTag();
 
         for (final String key : flows.keySet()) {
@@ -140,10 +142,14 @@ public class PopulateDiscoveryContext extends AbstractExtractionAction {
                             final AuthenticationMethodsByTag taggedMethods = getMethodByTag(methodsByTag, tag);
                             final AuthenticationMethodDescriptor method = new AuthenticationMethodDescriptor();
                             method.setId(flow.getId());
-                            final String id = flow.getId().substring(
-                                    AuthenticationFlowDescriptor.FLOW_ID_PREFIX.length());
-                            method.setTitle(additionalInfo.getProperty(id + ".title", id + ".title"));
-                            method.setStyle(additionalInfo.getProperty(id + ".style", id + ".style"));
+                            final String id =
+                                    flow.getId().substring(AuthenticationFlowDescriptor.FLOW_ID_PREFIX.length());
+                            method.setTitle(additionalInfo.getProperty(id + "." + tag + ".title") != null
+                                    ? additionalInfo.getProperty(id + "." + tag + ".title")
+                                    : additionalInfo.getProperty(id + ".title", id + ".title"));
+                            method.setStyle(additionalInfo.getProperty(id + "." + tag + ".style") != null
+                                    ? additionalInfo.getProperty(id + "." + tag + ".style")
+                                    : additionalInfo.getProperty(id + ".style", id + ".style"));
                             taggedMethods.getMethods().add(method);
                         } else {
                             log.debug("{} Ignoring {} from flow {}", getLogPrefix(), principal.getName(), key);
@@ -153,16 +159,16 @@ public class PopulateDiscoveryContext extends AbstractExtractionAction {
             }
         }
     }
-    
+
     /**
-     * Gets the list of authentication methods for one tag from the given list of them for all tags. A new entry will
-     * be created to the list for all tags if it was not found.
+     * Gets the list of authentication methods for one tag from the given list of them for all tags. A new entry will be
+     * created to the list for all tags if it was not found.
      * 
      * @param methodsByTag The list of all authentication methods for all tags.
      * @param tag The tag's identifier whose authentication methods are fetched.
      * @return The list of authentication methods for the given tag.
      */
-    protected @Nonnull AuthenticationMethodsByTag getMethodByTag(final List<AuthenticationMethodsByTag> methodsByTag, 
+    protected @Nonnull AuthenticationMethodsByTag getMethodByTag(final List<AuthenticationMethodsByTag> methodsByTag,
             final String tag) {
         for (final AuthenticationMethodsByTag methodByTag : methodsByTag) {
             if (methodByTag.getTag().getId().equals(tag)) {
@@ -177,16 +183,16 @@ public class PopulateDiscoveryContext extends AbstractExtractionAction {
         methodsByTag.add(newItem);
         return newItem;
     }
-    
+
     /**
      * Checks if any of the requested principals are found from the list of supported principals.
      * 
      * @param supportedPrincipals The list of supported principals.
      * @param requestedPrincipals The list of requested principals.
      * @return {@link true} if any of the requested principals were found (or the list of requested principals was
-     * empty), {@link false} otherwise.
+     *         empty), {@link false} otherwise.
      */
-    protected boolean isRequestedPrincipal(final Collection<Principal> supportedPrincipals, 
+    protected boolean isRequestedPrincipal(final Collection<Principal> supportedPrincipals,
             final Collection<Principal> requestedPrincipals) {
         if (requestedPrincipals.isEmpty()) {
             return true;
