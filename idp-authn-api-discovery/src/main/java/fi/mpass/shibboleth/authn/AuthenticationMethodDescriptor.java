@@ -36,6 +36,9 @@ public class AuthenticationMethodDescriptor {
     
     /** The style reference for this method. */
     private String style;
+    
+    /** The flag whether the method has already been manipulated. */
+    private boolean converted = false;
 
     /**
      * Get the identifier for this method.
@@ -83,6 +86,22 @@ public class AuthenticationMethodDescriptor {
      */
     public void setStyle(String newStyle) {
         this.style = newStyle;
+    }
+    
+    /**
+     * Set the flag whether the method has already been manipulated.
+     * @param flag What to set.
+     */
+    public void setConverted(boolean flag) {
+        converted = flag;
+    }
+    
+    /**
+     * Get the flag whether the method has already been manipulated.
+     * @return The flag whether the method has already been manipulated.
+     */
+    public boolean isConverted() {
+        return converted;
     }
 
 }
