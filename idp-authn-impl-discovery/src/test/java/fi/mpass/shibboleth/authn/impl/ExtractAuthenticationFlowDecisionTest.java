@@ -32,13 +32,13 @@ import org.testng.annotations.Test;
 import fi.mpass.shibboleth.authn.impl.ExtractAuthenticationFlowDecision;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.impl.PopulateAuthenticationContextTest;
+import net.shibboleth.idp.authn.impl.BaseAuthenticationContextTest;
 import net.shibboleth.idp.profile.ActionTestingSupport;
 
 /**
  * Unit tests for {@link ExtractAuthenticationFlowDecision}.
  */
-public class ExtractAuthenticationFlowDecisionTest extends PopulateAuthenticationContextTest {
+public class ExtractAuthenticationFlowDecisionTest extends BaseAuthenticationContextTest {
 
     /** The action to be tested. */
     private ExtractAuthenticationFlowDecision action;

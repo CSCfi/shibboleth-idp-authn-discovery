@@ -26,7 +26,7 @@ THE SOFTWARE.
     <parent>
         <groupId>net.shibboleth.idp</groupId>
         <artifactId>idp-parent</artifactId>
-        <version>3.3.1</version>
+        <version>3.4.1</version>
     </parent>
     <groupId>fi.mpass</groupId>
     <artifactId>idp-authn-discovery</artifactId>
@@ -43,7 +43,7 @@ THE SOFTWARE.
         <maven.compiler.version>3.5.1</maven.compiler.version>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <shib.idp.version>3.2.1</shib.idp.version>
+        <shib.idp.version>3.4.1</shib.idp.version>
         <gson.version>2.6.2</gson.version>
         <simpleframework.version>6.0.1</simpleframework.version>
         <checkstyle.configLocation>mpassid-checkstyle.xml</checkstyle.configLocation>
