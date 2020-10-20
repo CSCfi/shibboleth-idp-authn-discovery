@@ -30,6 +30,7 @@ THE SOFTWARE.
     
     <action-state id="SetRPUIInformation">
         <evaluate expression="SetRPUIInformation" />
+        <evaluate expression="PopulateDiscoveryContext" />
         <evaluate expression="'proceed'" />
         
         <transition on="proceed" to="DisplayAuthnFlowDiscoveryPage" />
@@ -42,6 +43,7 @@ THE SOFTWARE.
             <evaluate expression="opensamlProfileRequestContext.getSubcontext(T(net.shibboleth.idp.authn.context.AuthenticationContext))" result="viewScope.authenticationContext" />
             <evaluate expression="authenticationContext.getSubcontext(T(net.shibboleth.idp.authn.context.AuthenticationErrorContext))" result="viewScope.authenticationErrorContext" />
             <evaluate expression="authenticationContext.getSubcontext(T(net.shibboleth.idp.authn.context.AuthenticationWarningContext))" result="viewScope.authenticationWarningContext" />
+            <evaluate expression="authenticationContext.getSubcontext(T(fi.mpass.shibboleth.authn.AuthenticationDiscoveryContext))" result="viewScope.authenticationDiscoveryContext" />
             <evaluate expression="T(net.shibboleth.utilities.java.support.codec.HTMLEncoder)" result="viewScope.encoder" />
             <evaluate expression="flowRequestContext.getExternalContext().getNativeRequest()" result="viewScope.request" />
             <evaluate expression="flowRequestContext.getExternalContext().getNativeResponse()" result="viewScope.response" />

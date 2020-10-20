@@ -51,12 +51,17 @@ THE SOFTWARE.
         </property>
     </bean>
 
+    <bean id="PopulateDiscoveryContext"
+            class="fi.mpass.shibboleth.authn.impl.PopulateDiscoveryContext"
+            p:authorityProperties="%{idp.discovery.authority.properties:}" />
 
     <bean id="shibboleth.authn.Discovery.AuthnFlowFieldName" class="java.lang.String" c:_0="j_authnflow" />
-
+    <bean id="shibboleth.authn.Discovery.SelectedAuthorityFieldName" class="java.lang.String" c:_0="j_authnauthority" />
+    
     <bean id="ExtractAuthenticationFlowDecision"
         class="fi.mpass.shibboleth.authn.impl.ExtractAuthenticationFlowDecision" scope="prototype"
         p:httpServletRequest-ref="shibboleth.HttpServletRequest"
-        p:authnFlowFieldName-ref="shibboleth.authn.Discovery.AuthnFlowFieldName" />
+        p:authnFlowFieldName-ref="shibboleth.authn.Discovery.AuthnFlowFieldName"
+        p:selectedAuthorityFieldName-ref="shibboleth.authn.Discovery.SelectedAuthorityFieldName" />
 
 </beans>

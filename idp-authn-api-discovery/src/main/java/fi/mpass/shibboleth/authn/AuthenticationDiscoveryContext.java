@@ -30,45 +30,28 @@ import javax.annotation.Nonnull;
 
 import org.opensaml.messaging.context.BaseContext;
 
-import net.shibboleth.utilities.java.support.logic.Constraint;
+import net.shibboleth.utilities.java.support.collection.Pair;
 
 /**
  * This class carries information for the authentication method discovery about the potential authentication flows.
  */
 public class AuthenticationDiscoveryContext extends BaseContext {
     
-    /** The prefix for the principal names used in the ACRs. */
-    public static final String PRINCIPAL_PREFIX = "urn:mpass.id:";
-
-    /** The prefix for the source principal names used in the ACRs. */
-    public static final String SOURCE_PRINCIPAL_PREFIX = PRINCIPAL_PREFIX + "authnsource:";
-
-    /** The prefix for the tag principal names used in the ACRs. */
-    public static final String TAG_PRINCIPAL_PREFIX = PRINCIPAL_PREFIX + "authntag:";
-    
     /** The list of authentication methods by their tag. */
-    private List<AuthenticationMethodsByTag> methodsByTag;
+    private List<Pair<String, String>> flowsWithAuthorities;
     
     /**
      * Constructor.
      */
     public AuthenticationDiscoveryContext() {
-        methodsByTag = new ArrayList<>();
+        flowsWithAuthorities = new ArrayList<>();
     }
     
     /**
-     * Get the list of authentication methods by their tag.
-     * @return The list of authentication methods by their tag.
+     * Get the list of authentication flows with their authority definitions.
+     * @return The list of authentication flows with their authority definitions.
      */
-    public @Nonnull List<AuthenticationMethodsByTag> getMethodsByTag() {
-        return methodsByTag;
-    }
-    
-    /**
-     * Set the list of authentication methods by their tag.
-     * @param methods What to set.
-     */
-    public void setMethodsByTag(@Nonnull List<AuthenticationMethodsByTag> methods) {
-        methodsByTag = Constraint.isNotNull(methods, "The methods by tag list cannot be null!");
+    public @Nonnull List<Pair<String, String>> getFlowsWithAuthorities() {
+        return flowsWithAuthorities;
     }
 }

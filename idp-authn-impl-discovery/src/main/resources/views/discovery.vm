@@ -1,4 +1,4 @@
-#set ($flowMap = $authenticationContext.getPotentialFlows())
+#set ($flowList = $authenticationDiscoveryContext.getFlowsWithAuthorities())
 <!DOCTYPE html>
 <html>
   #set ($discoFlowId = $authenticationContext.getAttemptedFlow().getId())
@@ -15,18 +15,25 @@
         </header>
         <div class="content">
           <div class="column one">
-            #foreach ($mapEntry in $flowMap.entrySet())
-              #if ($mapEntry.key != $discoFlowId)
-                #set ($authnFlow = $mapEntry.key + ".message")
-                #set ($link = $flowExecutionUrl + "&j_authnflow=" + $mapEntry.key + "&_eventId_proceed=_eventId_proceed")
-                <p><a href="$link">#springMessageText($authnFlow, $mapEntry.key)</a></p>
+            #foreach ($mapEntry in $flowList)
+              #if ($mapEntry.first != $discoFlowId)
+                #if ($mapEntry.second)
+                  #set ($messageKey = $mapEntry.first + "." + $mapEntry.second + ".message")
+                  #set ($link = $flowExecutionUrl + "&j_authnflow=" + $mapEntry.first + "&j_authnauthority="+ $mapEntry.second + "&_eventId_proceed=_eventId_proceed")
+                  #set ($defaultMessage = $mapEntry.first + "." + $mapEntry.second)
+                #else
+                  #set ($messageKey = $mapEntry.first + ".message")
+                  #set ($link = $flowExecutionUrl + "&j_authnflow=" + $mapEntry.first + "&_eventId_proceed=_eventId_proceed")
+                  #set ($defaultMessage = $mapEntry.first)
+                #end
+                <p><a href="$link">#springMessageText($messageKey, $defaultMessage)</a></p>
               #end
             #end
           </div>
         </div>
       </div>
       <footer>
-        <div class="container container-footer">
+    <div class="container container-footer">
           <p class="footer-text">#springMessageText("idp.footer", "Insert your footer text here.")</p>
         </div>
       </footer>

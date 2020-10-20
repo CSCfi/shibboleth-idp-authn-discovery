@@ -23,9 +23,11 @@
 package fi.mpass.shibboleth.authn.impl;
 
 import javax.annotation.Nonnull;
+import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
 
 import net.shibboleth.idp.authn.AbstractExtractionAction;
+import net.shibboleth.idp.authn.AuthenticationResult;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
@@ -38,6 +40,8 @@ import org.opensaml.profile.context.ProfileRequestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Predicates;
+
 /**
  * An action that extracts a selected authentication flow from an HTTP form body or query string
  * and sets it as signaled authentication flow in {@link AuthenticationContext}. The signaled flow is
@@ -49,7 +53,6 @@ import org.slf4j.LoggerFactory;
  * @event {@link AuthnEventIds#RESELECT_FLOW}
  * @pre <pre>ProfileRequestContext.getSubcontext(AuthenticationContext.class, false) != null</pre>
  */
-@SuppressWarnings("rawtypes")
 public class ExtractAuthenticationFlowDecision extends AbstractExtractionAction {
 
     /** Class logger. */
@@ -58,11 +61,8 @@ public class ExtractAuthenticationFlowDecision extends AbstractExtractionAction 
     /** Parameter name for authentication flow id. */
     @Nonnull @NotEmpty private String authnFlowFieldName;
     
-    /** Parameter name for selected authentication detail to be put to authentication state map. */
-    private String selectedAuthnFieldName;
-    
-    /** Authentication state map key name for the selected authentication detail. */
-    private String selectedAuthnStateKey;
+    /** Parameter name for selected authentication authority. */
+    private String selectedAuthorityFieldName;
     
     /**
      * Set the authnFlow parameter name.
@@ -80,20 +80,10 @@ public class ExtractAuthenticationFlowDecision extends AbstractExtractionAction 
      * Set the parameter name for selected authentication detail to be put to authentication state map.
      * @param fieldName What to set.
      */
-    public void setSelectedAuthnFieldName(final String fieldName) {
+    public void setSelectedAuthorityFieldName(final String fieldName) {
         ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
         
-        selectedAuthnFieldName = fieldName;
-    }
-    
-    /**
-     * Set the authentication state map key name for the selected authentication detail.
-     * @param keyName What to set.
-     */
-    public void setSelectedAuthnStateKey(final String keyName) {
-        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
-
-        selectedAuthnStateKey = keyName;
+        selectedAuthorityFieldName = fieldName;
     }
     
     /** {@inheritDoc} */
@@ -116,12 +106,16 @@ public class ExtractAuthenticationFlowDecision extends AbstractExtractionAction 
         }
         log.debug("{} User selected authnFlow {}", getLogPrefix(), authnFlow);
         authenticationContext.setSignaledFlowId(authnFlow);
-        if (selectedAuthnFieldName != null && selectedAuthnStateKey != null) {
-            final String selectedAuthn = request.getParameter(selectedAuthnFieldName);
-            if (StringSupport.trimOrNull(selectedAuthn) != null) {
-                authenticationContext.getAuthenticationStateMap().put(selectedAuthnStateKey, selectedAuthn);
-                log.debug("{} Selected authentication detail set to {} as parameter {}", 
-                        getLogPrefix(), selectedAuthn, selectedAuthnStateKey);
+        
+        // circumvent the current requirement for exiting result when signaling a flow
+        final AuthenticationResult result = new AuthenticationResult(authnFlow, new Subject());
+        result.setReuseCondition(Predicates.alwaysFalse());
+        authenticationContext.getActiveResults().put(authnFlow, result);
+        if (selectedAuthorityFieldName != null) {
+            final String selectedAuthority = request.getParameter(selectedAuthorityFieldName);
+            if (StringSupport.trimOrNull(selectedAuthority) != null) {
+                authenticationContext.setAuthenticatingAuthority(selectedAuthority);
+                log.debug("{} Set authentication authority {}", getLogPrefix(), selectedAuthority);
             }
         }
         ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.RESELECT_FLOW);

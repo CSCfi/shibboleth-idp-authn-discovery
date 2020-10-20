@@ -48,6 +48,12 @@ public class ExtractAuthenticationFlowDecisionTest extends BaseAuthenticationCon
 
     /** The authentication flow decision. */
     private String authnFlowDecision;
+    
+    /** The authentication authority field name coming from UI. */
+    private String authnAuthorityField;
+
+    /** The authentication authority decision. */
+    private String authnAuthorityDecision;
 
     /** {@inheritDoc} */
     @BeforeMethod
@@ -55,8 +61,12 @@ public class ExtractAuthenticationFlowDecisionTest extends BaseAuthenticationCon
         super.setUp();
         authnFlowField = "mockAuthnFlowField";
         authnFlowDecision = "mockDecision";
+        authnAuthorityField = "mockAuthnAuthorityField";
+        authnAuthorityDecision = "mockAuthorityDecision";
+        
         action = new ExtractAuthenticationFlowDecision();
         action.setAuthnFlowFieldName(authnFlowField);
+        action.setSelectedAuthorityFieldName(authnAuthorityField);
         action.setHttpServletRequest(new MockHttpServletRequest());
     }
 
@@ -81,10 +91,10 @@ public class ExtractAuthenticationFlowDecisionTest extends BaseAuthenticationCon
     }
 
     /**
-     * Runs the action with valid input without state.
+     * Runs the action with valid input without authority.
      */
     @Test
-    public void testValidNoState() throws Exception {
+    public void testValidNoAuthority() throws Exception {
         action.initialize();
         ((MockHttpServletRequest) action.getHttpServletRequest()).addParameter(authnFlowField, authnFlowDecision);
         final Event event = action.execute(src);
@@ -92,44 +102,22 @@ public class ExtractAuthenticationFlowDecisionTest extends BaseAuthenticationCon
         AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class, false);
         Assert.assertNotNull(authCtx);
         Assert.assertEquals(authCtx.getSignaledFlowId(), authnFlowDecision);
-    }
-
-    /**
-     * Runs the action with valid input without state set.
-     */
-    @Test
-    public void testValidWithStateConfigured() throws Exception {
-        action.setSelectedAuthnFieldName("mockSelectedAuthnFieldName");
-        testValidNoState();
-    }
-
-    /**
-     * Runs the action with valid input without state set.
-     */
-    @Test
-    public void testValidWithStateKeyConfigured() throws Exception {
-        action.setSelectedAuthnStateKey("mockSelectedAuthnStateKey");
-        testValidNoState();
+        Assert.assertNull(authCtx.getAuthenticatingAuthority());
     }
     
     /**
-     * Runs the action with valid input and state.
+     * Runs the action with valid input with authority.
      */
     @Test
-    public void testValidWithStateSet() throws Exception {
-        final String selectedAuthnFieldName = "mockSelectedAuthnFieldName";
-        final String selectedAuthn = "mockSelectedAuthn";
-        final String selectedAuthnStateKey = "mockSelectedAuthnStateKey";
-        action.setSelectedAuthnFieldName(selectedAuthnFieldName);
-        action.setSelectedAuthnStateKey(selectedAuthnStateKey);
+    public void testValidWithAuthority() throws Exception {
         action.initialize();
         ((MockHttpServletRequest) action.getHttpServletRequest()).addParameter(authnFlowField, authnFlowDecision);
-        ((MockHttpServletRequest) action.getHttpServletRequest()).addParameter(selectedAuthnFieldName, selectedAuthn);
+        ((MockHttpServletRequest) action.getHttpServletRequest()).addParameter(authnAuthorityField, authnAuthorityDecision);
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.RESELECT_FLOW);
         AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class, false);
         Assert.assertNotNull(authCtx);
         Assert.assertEquals(authCtx.getSignaledFlowId(), authnFlowDecision);
-        Assert.assertEquals(authCtx.getAuthenticationStateMap().get(selectedAuthnStateKey), selectedAuthn);
+        Assert.assertEquals(authCtx.getAuthenticatingAuthority(), authnAuthorityDecision);
     }
 }
