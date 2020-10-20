@@ -26,11 +26,11 @@ THE SOFTWARE.
     <parent>
         <groupId>net.shibboleth.idp</groupId>
         <artifactId>idp-parent</artifactId>
-        <version>3.4.1</version>
+        <version>4.0.0</version>
     </parent>
     <groupId>fi.mpass</groupId>
     <artifactId>idp-authn-discovery</artifactId>
-    <version>0.9.6-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -40,14 +40,12 @@ THE SOFTWARE.
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.version>3.5.1</maven.compiler.version>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
-        <shib.idp.version>3.4.1</shib.idp.version>
+        <maven.compiler.source>9</maven.compiler.source>
+        <maven.compiler.target>9</maven.compiler.target>
+        <shib.idp.version>4.0.0</shib.idp.version>
         <gson.version>2.6.2</gson.version>
         <simpleframework.version>6.0.1</simpleframework.version>
         <checkstyle.configLocation>mpassid-checkstyle.xml</checkstyle.configLocation>
-        <checkstyle.plugin.version>2.17</checkstyle.plugin.version>
     </properties>
 
     <repositories>
@@ -161,42 +159,11 @@ THE SOFTWARE.
                 <artifactId>gson</artifactId>
                 <version>${gson.version}</version>
             </dependency>
-            <!-- Spring Social -->
-            <dependency>
-                <groupId>org.springframework.social</groupId>
-                <artifactId>spring-social-facebook</artifactId>
-                <version>2.0.3.RELEASE</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.social</groupId>
-                <artifactId>spring-social-twitter</artifactId>
-                <version>1.1.2.RELEASE</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.social</groupId>
-                <artifactId>spring-social-google</artifactId>
-                <version>1.0.0.RELEASE</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.social</groupId>
-                <artifactId>spring-social-linkedin</artifactId>
-                <version>1.0.2.RELEASE</version>
-            </dependency>
-            <dependency>
-               <groupId>com.nimbusds</groupId>
-               <artifactId>oauth2-oidc-sdk</artifactId>
-               <version>5.54</version>
-            </dependency>
             <dependency>
                <groupId>commons-io</groupId>
                <artifactId>commons-io</artifactId>
                <version>2.4</version>
             </dependency>
-            <dependency>
-              <groupId>com.nimbusds</groupId>
-              <artifactId>nimbus-jose-jwt</artifactId>
-              <version>4.33</version>
-            </dependency>       
 
             <!-- Provided Dependencies -->
 
@@ -327,51 +294,7 @@ THE SOFTWARE.
         </dependencies>
     </dependencyManagement>
 
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>${maven.compiler.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <version>2.10</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <version>2.5.5</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>${checkstyle.plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>cobertura-maven-plugin</artifactId>
-                    <version>2.7</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.eluder.coveralls</groupId>
-                    <artifactId>coveralls-maven-plugin</artifactId>
-                    <version>4.1.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.10.3</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-release-plugin</artifactId>
-                    <version>2.5.3</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-        
+    <build>        
         <plugins>
             <!--
                 Checkstyle configuration for checkstyle:* goals called directly
@@ -399,23 +322,6 @@ THE SOFTWARE.
                             </goals>
                         </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>cobertura-maven-plugin</artifactId>
-                <configuration>
-                    <formats>
-                        <format>xml</format>
-                        <format>html</format>
-                    </formats>
-                    <maxmem>256m</maxmem>
-                    <!-- aggregated reports for multi-module projects -->
-                    <aggregate>true</aggregate>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.eluder.coveralls</groupId>
-                <artifactId>coveralls-maven-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

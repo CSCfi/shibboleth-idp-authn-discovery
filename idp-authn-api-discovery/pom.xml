@@ -25,11 +25,16 @@ THE SOFTWARE.
     <parent>
         <artifactId>idp-authn-discovery</artifactId>
         <groupId>fi.mpass</groupId>
-        <version>0.9.6-SNAPSHOT</version>
+        <version>1.0.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
     <artifactId>idp-authn-api-discovery</artifactId>
     <packaging>jar</packaging>
+
+    <properties>
+        <checkstyle.configLocation>${project.basedir}/../mpassid-checkstyle.xml</checkstyle.configLocation>
+        <automatic.module.name>fi.mpassid.authn.discovery.api</automatic.module.name>
+    </properties>
 
     <licenses>
         <license>
@@ -71,10 +76,6 @@ THE SOFTWARE.
         <dependency>
             <groupId>${spring-webflow.groupId}</groupId>
             <artifactId>spring-webflow</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.velocity</groupId>
-            <artifactId>velocity</artifactId>
         </dependency>
 
         <!-- Provided Dependencies -->
