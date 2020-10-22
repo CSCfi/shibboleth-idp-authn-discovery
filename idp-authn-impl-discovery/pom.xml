@@ -54,32 +54,9 @@ THE SOFTWARE.
             <groupId>net.shibboleth.idp</groupId>
             <artifactId>idp-profile-api</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>${opensaml.groupId}</groupId>
-            <artifactId>opensaml-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${opensaml.groupId}</groupId>
-            <artifactId>opensaml-profile-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${opensaml.groupId}</groupId>
-            <artifactId>opensaml-soap-api</artifactId>
-        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>idp-authn-api-discovery</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>net.shibboleth.ext</groupId>
-            <artifactId>spring-extensions</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>${spring-webflow.groupId}</groupId>
-            <artifactId>spring-webflow</artifactId>
         </dependency>
 
         <!-- Provided Dependencies -->
@@ -93,47 +70,29 @@ THE SOFTWARE.
             <scope>test</scope>
             <type>test-jar</type>
         </dependency>
-
-        <dependency>
-            <groupId>${opensaml.groupId}</groupId>
-            <artifactId>opensaml-security-impl</artifactId>
-            <scope>test</scope>
-        </dependency>
-
         <dependency>
             <groupId>net.shibboleth.idp</groupId>
             <artifactId>idp-profile-api</artifactId>
             <scope>test</scope>
             <type>test-jar</type>
         </dependency>
-
-        <dependency>
-            <groupId>net.shibboleth.idp</groupId>
-            <artifactId>idp-authn-api</artifactId>
-            <scope>test</scope>
-            <type>test-jar</type>
-        </dependency>
-
-        <dependency>
-            <groupId>net.shibboleth.idp</groupId>
-            <artifactId>idp-authn-impl</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>net.shibboleth.idp</groupId>
-            <artifactId>idp-authn-impl</artifactId>
-            <scope>test</scope>
-            <type>test-jar</type>
-        </dependency>
-
         <dependency>
             <groupId>${opensaml.groupId}</groupId>
             <artifactId>opensaml-core</artifactId>
             <scope>test</scope>
             <type>test-jar</type>
         </dependency>
-
+        <dependency>
+            <groupId>net.shibboleth.idp</groupId>
+            <artifactId>idp-authn-impl</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.shibboleth.idp</groupId>
+            <artifactId>idp-authn-impl</artifactId>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
     </dependencies>
     
     <build>

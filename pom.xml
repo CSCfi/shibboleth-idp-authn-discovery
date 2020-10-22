@@ -90,43 +90,12 @@ THE SOFTWARE.
             </dependency>
             <dependency>
                 <groupId>net.shibboleth.idp</groupId>
-                <artifactId>idp-attribute-api</artifactId>
-                <version>${shib.idp.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.shibboleth.idp</groupId>
                 <artifactId>idp-authn-api</artifactId>
-                <version>${shib.idp.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>net.shibboleth.idp</groupId>
-                <artifactId>idp-attribute-resolver-api</artifactId>
-                <version>${shib.idp.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.shibboleth.idp</groupId>
-                <artifactId>idp-attribute-resolver-spring</artifactId>
-                <version>${shib.idp.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.shibboleth.idp</groupId>
-                <artifactId>idp-session-api</artifactId>
                 <version>${shib.idp.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.shibboleth.idp</groupId>
                 <artifactId>idp-profile-api</artifactId>
-                <version>${shib.idp.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.shibboleth.idp</groupId>
-                <artifactId>idp-profile-spring</artifactId>
-                <version>${shib.idp.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.shibboleth.idp</groupId>
-                <artifactId>idp-saml-api</artifactId>
                 <version>${shib.idp.version}</version>
             </dependency>
             <dependency>
@@ -138,31 +107,6 @@ THE SOFTWARE.
                 <groupId>${opensaml.groupId}</groupId>
                 <artifactId>opensaml-profile-api</artifactId>
                 <version>${opensaml.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${opensaml.groupId}</groupId>
-                <artifactId>opensaml-soap-api</artifactId>
-                <version>${opensaml.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${opensaml.groupId}</groupId>
-                <artifactId>opensaml-saml-api</artifactId>
-                <version>${opensaml.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${opensaml.groupId}</groupId>
-                <artifactId>opensaml-saml-impl</artifactId>
-                <version>${opensaml.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.code.gson</groupId>
-                <artifactId>gson</artifactId>
-                <version>${gson.version}</version>
-            </dependency>
-            <dependency>
-               <groupId>commons-io</groupId>
-               <artifactId>commons-io</artifactId>
-               <version>2.4</version>
             </dependency>
 
             <!-- Provided Dependencies -->
@@ -171,76 +115,12 @@ THE SOFTWARE.
 
             <!-- Test Dependencies -->
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.12</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>net.shibboleth.idp</groupId>
-                <artifactId>idp-attribute-resolver-impl</artifactId>
-                <version>${shib.idp.version}</version>
-                <type>test-jar</type>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>net.shibboleth.idp</groupId>
-                <artifactId>idp-attribute-resolver-spring</artifactId>
-                <version>${shib.idp.version}</version>
-                <type>test-jar</type>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>net.shibboleth.idp</groupId>
-                <artifactId>idp-saml-api</artifactId>
-                <version>${shib.idp.version}</version>
-                <type>test-jar</type>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>net.shibboleth.idp</groupId>
-                <artifactId>idp-saml-impl</artifactId>
-                <version>${shib.idp.version}</version>
-                <type>test-jar</type>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
                 <groupId>net.shibboleth.idp</groupId>
                 <artifactId>idp-core</artifactId>
                 <version>${shib.idp.version}</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
-            <dependency>
-                <groupId>${opensaml.groupId}</groupId>
-                <artifactId>opensaml-core</artifactId>
-                <version>${opensaml.version}</version>
-                <type>test-jar</type>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>${opensaml.groupId}</groupId>
-                <artifactId>opensaml-profile-api</artifactId>
-                <version>${opensaml.version}</version>
-                <scope>test</scope>
-                <type>test-jar</type>
-            </dependency>
-            <dependency>
-                <groupId>${opensaml.groupId}</groupId>
-                <artifactId>opensaml-saml-api</artifactId>
-                <version>${opensaml.version}</version>
-                <scope>test</scope>
-                <type>test-jar</type>
-            </dependency>
-            
-            <dependency>
-                <groupId>${opensaml.groupId}</groupId>
-                <artifactId>opensaml-security-impl</artifactId>
-                <version>${opensaml.version}</version>
-                <scope>test</scope>
-            </dependency>
-
             <dependency>
                 <groupId>net.shibboleth.idp</groupId>
                 <artifactId>idp-profile-api</artifactId>
@@ -249,13 +129,12 @@ THE SOFTWARE.
                 <type>test-jar</type>
             </dependency>
             <dependency>
-                <groupId>net.shibboleth.idp</groupId>
-                <artifactId>idp-profile-spring</artifactId>
-                <version>${shib.idp.version}</version>
+                <groupId>${opensaml.groupId}</groupId>
+                <artifactId>opensaml-core</artifactId>
+                <version>${opensaml.version}</version>
                 <scope>test</scope>
                 <type>test-jar</type>
             </dependency>
-
             <dependency>
                 <groupId>net.shibboleth.idp</groupId>
                 <artifactId>idp-authn-api</artifactId>
@@ -263,33 +142,18 @@ THE SOFTWARE.
                 <scope>test</scope>
                 <type>test-jar</type>
             </dependency>
-
             <dependency>
                 <groupId>net.shibboleth.idp</groupId>
                 <artifactId>idp-authn-impl</artifactId>
                 <version>${shib.idp.version}</version>
                 <scope>test</scope>
             </dependency>
-
             <dependency>
                 <groupId>net.shibboleth.idp</groupId>
                 <artifactId>idp-authn-impl</artifactId>
                 <version>${shib.idp.version}</version>
                 <scope>test</scope>
                 <type>test-jar</type>
-            </dependency>
-
-            <dependency>
-                <groupId>org.simpleframework</groupId>
-                <artifactId>simple-http</artifactId>
-                <version>${simpleframework.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.simpleframework</groupId>
-                <artifactId>simple-transport</artifactId>
-                <version>${simpleframework.version}</version>
-                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
