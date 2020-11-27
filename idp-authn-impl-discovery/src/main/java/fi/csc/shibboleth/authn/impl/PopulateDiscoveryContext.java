@@ -118,7 +118,7 @@ public class PopulateDiscoveryContext extends AbstractExtractionAction {
                 final String authorities = (String) authorityProperties.get(flow.getId());
                 if (StringSupport.trimOrNull(authorities) != null) {
                     for (final String authority : authorities.split(",")) {
-                        discoveryContext.getFlowsWithAuthorities().add(new Pair<>(flow.getId(), authority));
+                        discoveryContext.getFlowsWithAuthorities().add(new Pair<>(flow.getId(), authority.trim()));
                     }
                 } else {
                     discoveryContext.getFlowsWithAuthorities().add(new Pair<>(flow.getId(), null));
