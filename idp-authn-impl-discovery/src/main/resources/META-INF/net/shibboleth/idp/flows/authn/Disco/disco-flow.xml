@@ -37,6 +37,7 @@ THE SOFTWARE.
     </action-state>
     
     <view-state id="DisplayAuthnFlowDiscoveryPage" view="discovery">
+        <attribute name="csrf_excluded" value="true" type="boolean"/>
         <on-render>
             <evaluate expression="environment" result="viewScope.environment" />
             <evaluate expression="opensamlProfileRequestContext" result="viewScope.profileRequestContext" />
