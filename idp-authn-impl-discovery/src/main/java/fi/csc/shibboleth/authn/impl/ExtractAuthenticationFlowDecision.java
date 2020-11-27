@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package fi.mpass.shibboleth.authn.impl;
+package fi.csc.shibboleth.authn.impl;
 
 import javax.annotation.Nonnull;
 import javax.security.auth.Subject;

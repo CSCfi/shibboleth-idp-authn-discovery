@@ -1,8 +1,7 @@
 # Shibboleth IdP Authn Flow Discovery
 
 [![License](http://img.shields.io/:license-mit-blue.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://travis-ci.org/mpassid/shibboleth-idp-authn-discovery.svg?branch=master)](https://travis-ci.org/mpassid/shibboleth-idp-authn-discovery)
-[![Coverage Status](https://coveralls.io/repos/github/mpassid/shibboleth-idp-authn-discovery/badge.svg?branch=master)](https://coveralls.io/github/mpassid/shibboleth-idp-authn-discovery?branch=master)
+[![Build Status](https://travis-ci.org/CSCfi/shibboleth-idp-authn-discovery.svg?branch=master)](https://travis-ci.org/CSCfi/shibboleth-idp-authn-discovery)
 
 ## Overview
 

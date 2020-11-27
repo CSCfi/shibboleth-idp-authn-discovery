@@ -21,7 +21,7 @@
  * THE SOFTWARE.
  */
 
-package fi.mpass.shibboleth.authn.impl;
+package fi.csc.shibboleth.authn.impl;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.webflow.execution.Event;
@@ -29,7 +29,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import fi.mpass.shibboleth.authn.impl.ExtractAuthenticationFlowDecision;
+import fi.csc.shibboleth.authn.impl.ExtractAuthenticationFlowDecision;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
 import net.shibboleth.idp.authn.impl.BaseAuthenticationContextTest;

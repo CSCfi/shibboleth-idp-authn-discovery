@@ -24,7 +24,7 @@ THE SOFTWARE.
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>idp-authn-discovery</artifactId>
-        <groupId>fi.mpass</groupId>
+        <groupId>fi.csc.shibboleth</groupId>
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
@@ -32,8 +32,8 @@ THE SOFTWARE.
     <packaging>jar</packaging>
 
     <properties>
-        <checkstyle.configLocation>${project.basedir}/../mpassid-checkstyle.xml</checkstyle.configLocation>
-        <automatic.module.name>fi.mpassid.authn.discovery.api</automatic.module.name>
+        <checkstyle.configLocation>${project.basedir}/../checkstyle.xml</checkstyle.configLocation>
+        <automatic.module.name>fi.csc.authn.discovery.api</automatic.module.name>
     </properties>
 
     <licenses>

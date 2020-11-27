@@ -21,7 +21,7 @@
  * THE SOFTWARE.
  */
 
-package fi.mpass.shibboleth.authn.impl;
+package fi.csc.shibboleth.authn.impl;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -37,7 +37,7 @@ import org.opensaml.profile.context.ProfileRequestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fi.mpass.shibboleth.authn.AuthenticationDiscoveryContext;
+import fi.csc.shibboleth.authn.AuthenticationDiscoveryContext;
 import net.shibboleth.idp.authn.AbstractExtractionAction;
 import net.shibboleth.idp.authn.AuthenticationFlowDescriptor;
 import net.shibboleth.idp.authn.context.AuthenticationContext;

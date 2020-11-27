@@ -21,37 +21,5 @@
  * THE SOFTWARE.
  */
 
-package fi.mpass.shibboleth.authn;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
-import org.opensaml.messaging.context.BaseContext;
-
-import net.shibboleth.utilities.java.support.collection.Pair;
-
-/**
- * This class carries information for the authentication method discovery about the potential authentication flows.
- */
-public class AuthenticationDiscoveryContext extends BaseContext {
-    
-    /** The list of authentication methods by their tag. */
-    private List<Pair<String, String>> flowsWithAuthorities;
-    
-    /**
-     * Constructor.
-     */
-    public AuthenticationDiscoveryContext() {
-        flowsWithAuthorities = new ArrayList<>();
-    }
-    
-    /**
-     * Get the list of authentication flows with their authority definitions.
-     * @return The list of authentication flows with their authority definitions.
-     */
-    public @Nonnull List<Pair<String, String>> getFlowsWithAuthorities() {
-        return flowsWithAuthorities;
-    }
-}
+/** Implementation of the authentication flow discovery action. */
+package fi.csc.shibboleth.authn.impl;
