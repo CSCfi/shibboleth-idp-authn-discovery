@@ -5,12 +5,12 @@
 
 ## Overview
 
-This module implements a simple authentication method selection flow for [Shibboleth Identity Provider v3](https://wiki.shibboleth.net/confluence/display/IDP30/Home). The module can be used for first displaying all
+This module implements a simple authentication method selection flow for [Shibboleth Identity Provider v4](https://wiki.shibboleth.net/confluence/display/IDP4/Home). The module can be used for first displaying all
 the available authentication flows and then proceeding with the user-selected authentication flow.
 
 ## Prerequisities and compilation
 
-- Java 7+
+- Java 11+
 - [Apache Maven 3](https://maven.apache.org/)
 
 ```
