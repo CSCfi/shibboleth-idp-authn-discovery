@@ -30,9 +30,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 
+import org.opensaml.messaging.context.navigate.ChildContextLookup;
+import org.opensaml.profile.action.ActionSupport;
 import org.opensaml.profile.context.ProfileRequestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +44,8 @@ import fi.csc.shibboleth.authn.AuthenticationDiscoveryContext;
 import net.shibboleth.idp.authn.AbstractExtractionAction;
 import net.shibboleth.idp.authn.AuthenticationFlowDescriptor;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
+import net.shibboleth.idp.profile.IdPEventIds;
+import net.shibboleth.idp.profile.context.RelyingPartyContext;
 import net.shibboleth.utilities.java.support.collection.Pair;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import net.shibboleth.utilities.java.support.component.ComponentSupport;
@@ -62,12 +67,22 @@ public class PopulateDiscoveryContext extends AbstractExtractionAction {
     
     private Properties authorityProperties;
 
+    /** Relying party id.*/
+    private String relyingPartyId;
+
+    /**
+     * Strategy used to locate the {@link RelyingPartyContext} associated with a given {@link ProfileRequestContext}.
+     */
+    @Nonnull
+    private Function<ProfileRequestContext, RelyingPartyContext> relyingPartyContextLookupStrategy;
+
     /**
      * Constructor.
      */
     public PopulateDiscoveryContext() {
         ignoredFlows = Collections.emptyList();
         authorityProperties = new Properties();
+        relyingPartyContextLookupStrategy = new ChildContextLookup<>(RelyingPartyContext.class);
     }
 
     /** {@inheritDoc} */
@@ -98,8 +113,35 @@ public class PopulateDiscoveryContext extends AbstractExtractionAction {
             } catch (final IOException e) {
                 log.error("{} Error loading {}", getLogPrefix(), propertiesFile, e);
             }
-
         }
+    }
+
+    /**
+     * Set the strategy used to locate the {@link RelyingPartyContext} associated with a given
+     * {@link ProfileRequestContext}.
+     *
+     * @param strategy strategy used to locate the {@link RelyingPartyContext} associated with a given
+     *            {@link ProfileRequestContext}
+     */
+    public void setRelyingPartyContextLookupStrategy(
+            @Nonnull final Function<ProfileRequestContext, RelyingPartyContext> strategy) {
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
+
+        relyingPartyContextLookupStrategy =
+                Constraint.isNotNull(strategy, "RelyingPartyContext lookup strategy cannot be null");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected boolean doPreExecute(@Nonnull final ProfileRequestContext profileRequestContext, @Nonnull final AuthenticationContext authenticationContext) {
+        final RelyingPartyContext rpCtx = relyingPartyContextLookupStrategy.apply(profileRequestContext);
+        if (rpCtx == null || rpCtx.getRelyingPartyId() == null) {
+            log.error("{} No relying party context or id associated with this profile request", getLogPrefix());
+            ActionSupport.buildEvent(profileRequestContext, IdPEventIds.INVALID_RELYING_PARTY_CTX);
+            return false;
+        }
+        relyingPartyId = rpCtx.getRelyingPartyId();
+        return true;
     }
 
     /** {@inheritDoc} */
@@ -109,13 +151,15 @@ public class PopulateDiscoveryContext extends AbstractExtractionAction {
 
         final Map<String, AuthenticationFlowDescriptor> flows = authenticationContext.getPotentialFlows();
         final AuthenticationDiscoveryContext discoveryContext = new AuthenticationDiscoveryContext();
-
         for (final String key : flows.keySet()) {
             if (ignoredFlows.contains(key)) {
                 log.debug("{} Ignoring {} from the context", getLogPrefix(), key);
             } else {
                 final AuthenticationFlowDescriptor flow = flows.get(key);
-                final String authorities = (String) authorityProperties.get(flow.getId());
+                String authorities = (String) authorityProperties.get(relyingPartyId + "." + flow.getId());
+                if (StringSupport.trimOrNull(authorities) == null) {
+                    authorities = (String) authorityProperties.get(flow.getId());
+                }
                 if (StringSupport.trimOrNull(authorities) != null) {
                     for (final String authority : authorities.split(",")) {
                         discoveryContext.getFlowsWithAuthorities().add(new Pair<>(flow.getId(), authority.trim()));
