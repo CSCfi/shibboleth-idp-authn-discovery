@@ -175,13 +175,13 @@ public class ExtractAuthenticationFlowDecision extends AbstractExtractionAction 
                     try {
                         configuredAuthority=java.net.URLDecoder.
                                 decode(configuredAuthority, StandardCharsets.UTF_8.name());
+                        if (configuredAuthority.equals(selectedAuthority)) {
+                            return true;
+                        }
                     } catch (final UnsupportedEncodingException e) {
                         log.error("{} Failed url decoding string", getLogPrefix(), e);
-                        return false;
+                        //Just move to next one
                     }
-                }
-                if (configuredAuthority.equals(selectedAuthority)) {
-                    return true;
                 }
             }
         }
