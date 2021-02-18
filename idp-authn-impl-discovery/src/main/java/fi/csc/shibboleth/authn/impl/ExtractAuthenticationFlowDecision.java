@@ -168,7 +168,7 @@ public class ExtractAuthenticationFlowDecision extends AbstractExtractionAction 
         for (final Pair<String, String> pair:discoveryContext.getFlowsWithAuthorities()) {
             String configuredAuthority=pair.getSecond();
             if (authnFlow.equals(pair.getFirst())) {
-                if (pair.getSecond() == null && configuredAuthority == null) {
+                if (selectedAuthority == null && configuredAuthority == null) {
                     return true;
                 }
                 if (configuredAuthority != null) {
