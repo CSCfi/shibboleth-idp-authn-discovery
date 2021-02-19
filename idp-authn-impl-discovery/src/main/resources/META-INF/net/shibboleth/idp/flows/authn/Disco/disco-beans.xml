@@ -60,6 +60,7 @@ THE SOFTWARE.
     
     <bean id="ExtractAuthenticationFlowDecision"
         class="fi.csc.shibboleth.authn.impl.ExtractAuthenticationFlowDecision" scope="prototype"
+        p:trim="true"
         p:httpServletRequest-ref="shibboleth.HttpServletRequest"
         p:authnFlowFieldName-ref="shibboleth.authn.Discovery.AuthnFlowFieldName"
         p:selectedAuthorityFieldName-ref="shibboleth.authn.Discovery.SelectedAuthorityFieldName" />

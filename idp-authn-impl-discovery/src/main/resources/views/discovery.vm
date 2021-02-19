@@ -26,7 +26,7 @@
                   #set ($link = $flowExecutionUrl + "&j_authnflow=" + $mapEntry.first + "&_eventId_proceed=_eventId_proceed")
                   #set ($defaultMessage = $mapEntry.first)
                 #end
-                <p><a href="$link">#springMessageText($messageKey, $defaultMessage)</a></p>
+                <p><a href="$link#if($csrfToken)&${csrfToken.parameterName}=${csrfToken.token}#{else}#end">#springMessageText($messageKey, $defaultMessage)</a></p>
               #end
             #end
           </div>
