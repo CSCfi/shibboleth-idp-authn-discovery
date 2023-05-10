@@ -64,7 +64,7 @@ public class PopulateDiscoveryContext extends AbstractExtractionAction {
 
     /** The list of flow ids to be ignored from the discovery context. */
     private List<String> ignoredFlows;
-    
+
     private Properties authorityProperties;
 
     /** Relying party id.*/
@@ -86,20 +86,21 @@ public class PopulateDiscoveryContext extends AbstractExtractionAction {
     }
 
     /** {@inheritDoc} */
-    protected void doInitialize() throws ComponentInitializationException {
+    @Override
+	protected void doInitialize() throws ComponentInitializationException {
         super.doInitialize();
     }
 
     /**
      * Set the list of flow ids to be ignored from the discovey context.
-     * 
+     *
      * @param flowIds What to set.
      */
     public void setIgnoredFlows(final List<String> flowIds) {
         ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
         ignoredFlows = Constraint.isNotNull(flowIds, "List of ignored flow ids cannot be null");
     }
-    
+
     public void setAuthorityProperties(final String propertiesFile) {
         ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
         if (StringSupport.trimOrNull(propertiesFile) == null) {

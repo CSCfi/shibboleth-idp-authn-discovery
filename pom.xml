@@ -23,14 +23,23 @@ THE SOFTWARE.
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+<!--
     <parent>
         <groupId>net.shibboleth.idp</groupId>
         <artifactId>idp-parent</artifactId>
-        <version>4.0.0</version>
+        <version>4.3.0</version>
     </parent>
+    -->
+
+    <parent>
+        <groupId>net.shibboleth</groupId>
+        <artifactId>parent</artifactId>
+        <version>11.3.3</version>
+    </parent>
+
     <groupId>fi.csc.shibboleth</groupId>
     <artifactId>idp-authn-discovery</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.1.0</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -40,11 +49,13 @@ THE SOFTWARE.
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>9</maven.compiler.source>
-        <maven.compiler.target>9</maven.compiler.target>
-        <shib.idp.version>4.0.0</shib.idp.version>
-        <gson.version>2.6.2</gson.version>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <shib.idp.version>4.3.0</shib.idp.version>
+        <gson.version>2.9.0</gson.version>
         <simpleframework.version>6.0.1</simpleframework.version>
+        <opensaml.groupId>org.opensaml</opensaml.groupId>
+        <opensaml.version>4.3.0</opensaml.version>
         <checkstyle.configLocation>checkstyle.xml</checkstyle.configLocation>
     </properties>
 

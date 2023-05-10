@@ -45,7 +45,7 @@ THE SOFTWARE.
     <bean id="SetRPUIInformation"
             class="net.shibboleth.idp.ui.impl.SetRPUIInformation" scope="prototype"
             p:activationCondition-ref="shibboleth.authn.Disco.populateUIInfo"
-            p:httpServletRequest-ref="shibboleth.HttpServletRequest">
+            p:httpServletRequestSupplier-ref="shibboleth.HttpServletRequestSupplier">
         <property name="fallbackLanguages">
             <bean parent="shibboleth.CommaDelimStringArray" c:_0="%{idp.ui.fallbackLanguages:}" />
         </property>
@@ -61,7 +61,7 @@ THE SOFTWARE.
     <bean id="ExtractAuthenticationFlowDecision"
         class="fi.csc.shibboleth.authn.impl.ExtractAuthenticationFlowDecision" scope="prototype"
         p:trim="true"
-        p:httpServletRequest-ref="shibboleth.HttpServletRequest"
+        p:httpServletRequestSupplier-ref="shibboleth.HttpServletRequestSupplier"
         p:authnFlowFieldName-ref="shibboleth.authn.Discovery.AuthnFlowFieldName"
         p:selectedAuthorityFieldName-ref="shibboleth.authn.Discovery.SelectedAuthorityFieldName" />
 

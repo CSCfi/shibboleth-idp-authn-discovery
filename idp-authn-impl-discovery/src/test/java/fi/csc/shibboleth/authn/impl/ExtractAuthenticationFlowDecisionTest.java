@@ -23,6 +23,8 @@
 
 package fi.csc.shibboleth.authn.impl;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.webflow.execution.Event;
 import org.testng.Assert;
@@ -32,9 +34,10 @@ import org.testng.annotations.Test;
 import fi.csc.shibboleth.authn.AuthenticationDiscoveryContext;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.impl.BaseAuthenticationContextTest;
-import net.shibboleth.idp.profile.ActionTestingSupport;
+import net.shibboleth.idp.authn.impl.testing.BaseAuthenticationContextTest;
+import net.shibboleth.idp.profile.testing.ActionTestingSupport;
 import net.shibboleth.utilities.java.support.collection.Pair;
+import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 
 /**
  * Unit tests for {@link ExtractAuthenticationFlowDecision}.
@@ -49,7 +52,7 @@ public class ExtractAuthenticationFlowDecisionTest extends BaseAuthenticationCon
 
     /** The authentication flow decision. */
     private String authnFlowDecision;
-    
+
     /** The authentication flow decision. */
     private String authnFlowDecision2;
 
@@ -59,16 +62,18 @@ public class ExtractAuthenticationFlowDecisionTest extends BaseAuthenticationCon
     /** The authentication authority decision. */
     private String authnAuthorityDecision;
 
-    /** {@inheritDoc} */
-    @BeforeMethod
-    public void setUp() throws Exception {
+    /** {@inheritDoc} 
+     * @throws ComponentInitializationException */
+    @Override
+	@BeforeMethod
+    public void setUp() throws ComponentInitializationException {
         super.setUp();
         authnFlowField = "mockAuthnFlowField";
         authnFlowDecision = "mockDecision";
         authnFlowDecision2 = "mockDecision2";
         authnAuthorityField = "mockAuthnAuthorityField";
         authnAuthorityDecision = "mockAuthorityDecision";
-        AuthenticationDiscoveryContext discoveryCtx = 
+        AuthenticationDiscoveryContext discoveryCtx =
             (AuthenticationDiscoveryContext) prc.getSubcontext(AuthenticationContext.class).
             addSubcontext(new AuthenticationDiscoveryContext());
         discoveryCtx.getFlowsWithAuthorities().add(new Pair<String,String>("mockDecision","mockAuthorityDecision"));
@@ -89,7 +94,7 @@ public class ExtractAuthenticationFlowDecisionTest extends BaseAuthenticationCon
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.REQUEST_UNSUPPORTED);
     }
-    
+
     /**
      * Runs the action with invalid input.
      */

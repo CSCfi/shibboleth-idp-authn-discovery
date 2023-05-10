@@ -29,6 +29,14 @@ import javax.annotation.Nonnull;
 import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
 
+import org.opensaml.profile.action.ActionSupport;
+import org.opensaml.profile.context.ProfileRequestContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Predicates;
+
+import fi.csc.shibboleth.authn.AuthenticationDiscoveryContext;
 import net.shibboleth.idp.authn.AbstractExtractionAction;
 import net.shibboleth.idp.authn.AuthenticationResult;
 import net.shibboleth.idp.authn.AuthnEventIds;
@@ -39,15 +47,6 @@ import net.shibboleth.utilities.java.support.component.ComponentSupport;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
-import org.opensaml.profile.action.ActionSupport;
-import org.opensaml.profile.context.ProfileRequestContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Predicates;
-
-import fi.csc.shibboleth.authn.AuthenticationDiscoveryContext;
-
 /**
  * An action that extracts a selected authentication flow from an HTTP form body or query string
  * and sets it as signaled authentication flow in {@link AuthenticationContext}. The signaled flow is
@@ -57,7 +56,7 @@ import fi.csc.shibboleth.authn.AuthenticationDiscoveryContext;
  *
  * If the action extracts not only flow but also Authenticating Authority the values must match flow
  * authority pair defined in {@link AuthenticationDiscoveryContext}.
- * 
+ *
  * @event {@link AuthnEventIds#REQUEST_UNSUPPORTED}
  * @event {@link AuthnEventIds#RESELECT_FLOW}
  * @pre <pre>ProfileRequestContext.getSubcontext(AuthenticationContext.class, false) != null</pre>
@@ -69,7 +68,7 @@ public class ExtractAuthenticationFlowDecision extends AbstractExtractionAction 
 
     /** Parameter name for authentication flow id. */
     @Nonnull @NotEmpty private String authnFlowFieldName;
-    
+
     /** Parameter name for selected authentication authority. */
     private String selectedAuthorityFieldName;
 
@@ -81,29 +80,29 @@ public class ExtractAuthenticationFlowDecision extends AbstractExtractionAction 
 
     /** Discovery context containing valid flow / authority pairs.*/
     private AuthenticationDiscoveryContext discoveryContext;
-    
+
     /**
      * Set the authnFlow parameter name.
-     * 
+     *
      * @param fieldName the authnFlow parameter name
      */
     public void setAuthnFlowFieldName(@Nonnull @NotEmpty final String fieldName) {
         ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
-        
+
         authnFlowFieldName = Constraint.isNotNull(
                 StringSupport.trimOrNull(fieldName), "AuthnFlow field name cannot be null or empty.");
     }
-    
+
     /**
      * Set the parameter name for selected authentication detail to be put to authentication state map.
      * @param fieldName What to set.
      */
     public void setSelectedAuthorityFieldName(final String fieldName) {
         ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
-        
+
         selectedAuthorityFieldName = fieldName;
     }
-    
+
     /** {@inheritDoc} */
     @Override
     protected boolean doPreExecute(@Nonnull final ProfileRequestContext profileRequestContext,
