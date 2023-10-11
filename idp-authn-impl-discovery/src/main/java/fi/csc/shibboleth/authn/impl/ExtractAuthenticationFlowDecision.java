@@ -27,7 +27,6 @@ import java.nio.charset.StandardCharsets;
 
 import javax.annotation.Nonnull;
 import javax.security.auth.Subject;
-import javax.servlet.http.HttpServletRequest;
 
 import org.opensaml.profile.action.ActionSupport;
 import org.opensaml.profile.context.ProfileRequestContext;
@@ -37,48 +36,57 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Predicates;
 
 import fi.csc.shibboleth.authn.AuthenticationDiscoveryContext;
+import jakarta.servlet.http.HttpServletRequest;
 import net.shibboleth.idp.authn.AbstractExtractionAction;
 import net.shibboleth.idp.authn.AuthenticationResult;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
-import net.shibboleth.utilities.java.support.collection.Pair;
-import net.shibboleth.utilities.java.support.component.ComponentSupport;
-import net.shibboleth.utilities.java.support.logic.Constraint;
-import net.shibboleth.utilities.java.support.primitive.StringSupport;
+import net.shibboleth.shared.annotation.constraint.NotEmpty;
+import net.shibboleth.shared.collection.Pair;
+import net.shibboleth.shared.logic.Constraint;
 
 /**
- * An action that extracts a selected authentication flow from an HTTP form body or query string
- * and sets it as signaled authentication flow in {@link AuthenticationContext}. The signaled flow is
- * set without any validations: it is assumed that the upcoming actions (like for instance the default
- * {@link SelectAuthenticationFlow}) verifies whether the signaled flow meets the requirements in the
- * context. Finally, the action builds {@link AuthnEventIds.RESELECT_FLOW} event.
+ * An action that extracts a selected authentication flow from an HTTP form body
+ * or query string and sets it as signaled authentication flow in
+ * {@link AuthenticationContext}. The signaled flow is set without any
+ * validations: it is assumed that the upcoming actions (like for instance the
+ * default {@link SelectAuthenticationFlow}) verifies whether the signaled flow
+ * meets the requirements in the context. Finally, the action builds
+ * {@link AuthnEventIds.RESELECT_FLOW} event.
  *
- * If the action extracts not only flow but also Authenticating Authority the values must match flow
- * authority pair defined in {@link AuthenticationDiscoveryContext}.
+ * If the action extracts not only flow but also Authenticating Authority the
+ * values must match flow authority pair defined in
+ * {@link AuthenticationDiscoveryContext}.
  *
  * @event {@link AuthnEventIds#REQUEST_UNSUPPORTED}
  * @event {@link AuthnEventIds#RESELECT_FLOW}
- * @pre <pre>ProfileRequestContext.getSubcontext(AuthenticationContext.class, false) != null</pre>
+ * @pre
+ * 
+ *      <pre>
+ *      ProfileRequestContext.getSubcontext(AuthenticationContext.class, false) != null
+ *      </pre>
  */
 public class ExtractAuthenticationFlowDecision extends AbstractExtractionAction {
 
     /** Class logger. */
-    @Nonnull private final Logger log = LoggerFactory.getLogger(ExtractAuthenticationFlowDecision.class);
+    @Nonnull
+    private final Logger log = LoggerFactory.getLogger(ExtractAuthenticationFlowDecision.class);
 
     /** Parameter name for authentication flow id. */
-    @Nonnull @NotEmpty private String authnFlowFieldName;
+    @Nonnull
+    @NotEmpty
+    private String authnFlowFieldName;
 
     /** Parameter name for selected authentication authority. */
     private String selectedAuthorityFieldName;
 
-    /** Authentication flow selected by the user.*/
+    /** Authentication flow selected by the user. */
     private String authnFlow;
 
-    /** Authority selected by the user.*/
+    /** Authority selected by the user. */
     private String selectedAuthority;
 
-    /** Discovery context containing valid flow / authority pairs.*/
+    /** Discovery context containing valid flow / authority pairs. */
     private AuthenticationDiscoveryContext discoveryContext;
 
     /**
@@ -87,19 +95,18 @@ public class ExtractAuthenticationFlowDecision extends AbstractExtractionAction 
      * @param fieldName the authnFlow parameter name
      */
     public void setAuthnFlowFieldName(@Nonnull @NotEmpty final String fieldName) {
-        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
-
-        authnFlowFieldName = Constraint.isNotNull(
-                StringSupport.trimOrNull(fieldName), "AuthnFlow field name cannot be null or empty.");
+        checkSetterPreconditions();
+        authnFlowFieldName = Constraint.isNotEmpty(fieldName, "AuthnFlow field name cannot be null or empty.");
     }
 
     /**
-     * Set the parameter name for selected authentication detail to be put to authentication state map.
+     * Set the parameter name for selected authentication detail to be put to
+     * authentication state map.
+     * 
      * @param fieldName What to set.
      */
     public void setSelectedAuthorityFieldName(final String fieldName) {
-        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
-
+        checkSetterPreconditions();
         selectedAuthorityFieldName = fieldName;
     }
 
@@ -115,7 +122,7 @@ public class ExtractAuthenticationFlowDecision extends AbstractExtractionAction 
             return false;
         }
         authnFlow = request.getParameter(authnFlowFieldName);
-        if (StringSupport.trimOrNull(authnFlow) == null) {
+        if (authnFlow == null || authnFlow.isEmpty()) {
             log.error("{} No authnFlow in request", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.REQUEST_UNSUPPORTED);
             return false;
@@ -149,7 +156,7 @@ public class ExtractAuthenticationFlowDecision extends AbstractExtractionAction 
         final AuthenticationResult result = new AuthenticationResult(authnFlow, new Subject());
         result.setReuseCondition(Predicates.alwaysFalse());
         authenticationContext.getActiveResults().put(authnFlow, result);
-        if (StringSupport.trimOrNull(selectedAuthority) != null) {
+        if (selectedAuthority != null && !selectedAuthority.isEmpty()) {
             authenticationContext.setAuthenticatingAuthority(selectedAuthority);
             log.debug("{} Set authentication authority {}", getLogPrefix(), selectedAuthority);
         }
@@ -157,29 +164,29 @@ public class ExtractAuthenticationFlowDecision extends AbstractExtractionAction 
     }
 
     /**
-     * Validates the user selection matches the listed options as Shibboleth mechanisms
-     * do not verify that for Authenticating Authority. The configured authority value
-     * may be url encoded.
+     * Validates the user selection matches the listed options as Shibboleth
+     * mechanisms do not verify that for Authenticating Authority. The configured
+     * authority value may be url encoded.
      *
      * @return true if select matched listed options.
      */
     private boolean validateUserSelection() {
-        for (final Pair<String, String> pair:discoveryContext.getFlowsWithAuthorities()) {
-            String configuredAuthority=pair.getSecond();
+        for (final Pair<String, String> pair : discoveryContext.getFlowsWithAuthorities()) {
+            String configuredAuthority = pair.getSecond();
             if (authnFlow.equals(pair.getFirst())) {
                 if (selectedAuthority == null && configuredAuthority == null) {
                     return true;
                 }
                 if (configuredAuthority != null) {
                     try {
-                        configuredAuthority=java.net.URLDecoder.
-                                decode(configuredAuthority, StandardCharsets.UTF_8.name());
+                        configuredAuthority = java.net.URLDecoder.decode(configuredAuthority,
+                                StandardCharsets.UTF_8.name());
                         if (configuredAuthority.equals(selectedAuthority)) {
                             return true;
                         }
                     } catch (final UnsupportedEncodingException e) {
                         log.error("{} Failed url decoding string", getLogPrefix(), e);
-                        //Just move to next one
+                        // Just move to next one
                     }
                 }
             }

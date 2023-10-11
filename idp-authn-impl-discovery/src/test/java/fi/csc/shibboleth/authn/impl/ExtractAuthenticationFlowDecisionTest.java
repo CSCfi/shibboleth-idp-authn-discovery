@@ -23,26 +23,32 @@
 
 package fi.csc.shibboleth.authn.impl;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
+import org.opensaml.profile.context.ProfileRequestContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.webflow.execution.Event;
+import org.springframework.webflow.execution.RequestContext;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import fi.csc.shibboleth.authn.AuthenticationDiscoveryContext;
+import jakarta.servlet.http.HttpServletRequest;
+import net.shibboleth.idp.authn.AuthenticationFlowDescriptor;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.impl.testing.BaseAuthenticationContextTest;
+import net.shibboleth.idp.profile.context.navigate.WebflowRequestContextProfileRequestContextLookup;
 import net.shibboleth.idp.profile.testing.ActionTestingSupport;
-import net.shibboleth.utilities.java.support.collection.Pair;
-import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
+import net.shibboleth.idp.profile.testing.RequestContextBuilder;
+import net.shibboleth.shared.collection.Pair;
+import net.shibboleth.shared.component.ComponentInitializationException;
+import net.shibboleth.shared.primitive.NonnullSupplier;
 
 /**
  * Unit tests for {@link ExtractAuthenticationFlowDecision}.
  */
-public class ExtractAuthenticationFlowDecisionTest extends BaseAuthenticationContextTest {
+public class ExtractAuthenticationFlowDecisionTest {
 
     /** The action to be tested. */
     private ExtractAuthenticationFlowDecision action;
@@ -62,34 +68,58 @@ public class ExtractAuthenticationFlowDecisionTest extends BaseAuthenticationCon
     /** The authentication authority decision. */
     private String authnAuthorityDecision;
 
-    /** {@inheritDoc} 
-     * @throws ComponentInitializationException */
-    @Override
-	@BeforeMethod
+    private RequestContext src;
+    private ProfileRequestContext prc;
+    private List<AuthenticationFlowDescriptor> authenticationFlows;
+
+    protected void initializeMembers() throws ComponentInitializationException {
+        src = new RequestContextBuilder().buildRequestContext();
+        prc = new WebflowRequestContextProfileRequestContextLookup().apply(src);
+        prc.addSubcontext(new AuthenticationContext(), true);
+
+        authenticationFlows = List.of(new AuthenticationFlowDescriptor(), new AuthenticationFlowDescriptor(),
+                new AuthenticationFlowDescriptor());
+        authenticationFlows.get(0).setId("test1");
+        authenticationFlows.get(1).setId("test2");
+        authenticationFlows.get(1).setPassiveAuthenticationSupported(true);
+        authenticationFlows.get(2).setId("test3");
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @throws ComponentInitializationException
+     */
+    @BeforeMethod
     public void setUp() throws ComponentInitializationException {
-        super.setUp();
+        initializeMembers();
         authnFlowField = "mockAuthnFlowField";
         authnFlowDecision = "mockDecision";
         authnFlowDecision2 = "mockDecision2";
         authnAuthorityField = "mockAuthnAuthorityField";
         authnAuthorityDecision = "mockAuthorityDecision";
-        AuthenticationDiscoveryContext discoveryCtx =
-            (AuthenticationDiscoveryContext) prc.getSubcontext(AuthenticationContext.class).
-            addSubcontext(new AuthenticationDiscoveryContext());
-        discoveryCtx.getFlowsWithAuthorities().add(new Pair<String,String>("mockDecision","mockAuthorityDecision"));
-        discoveryCtx.getFlowsWithAuthorities().add(new Pair<String,String>("mockDecision2",null));
+        AuthenticationDiscoveryContext discoveryCtx = (AuthenticationDiscoveryContext) prc
+                .getSubcontext(AuthenticationContext.class).addSubcontext(new AuthenticationDiscoveryContext());
+        discoveryCtx.getFlowsWithAuthorities().add(new Pair<String, String>("mockDecision", "mockAuthorityDecision"));
+        discoveryCtx.getFlowsWithAuthorities().add(new Pair<String, String>("mockDecision2", null));
         action = new ExtractAuthenticationFlowDecision();
         action.setTrim(true);
         action.setAuthnFlowFieldName(authnFlowField);
         action.setSelectedAuthorityFieldName(authnAuthorityField);
-        action.setHttpServletRequest(new MockHttpServletRequest());
+        final MockHttpServletRequest request = new MockHttpServletRequest();
+        action.setHttpServletRequestSupplier(new NonnullSupplier<>() {
+            public HttpServletRequest get() {
+                return request;
+            }
+        });
     }
 
     /**
      * Runs the action without {@link HttpServletRequest}.
      */
-    @Test public void testMissingServlet() throws Exception {
-        action.setHttpServletRequest(null);
+    @Test
+    public void testMissingServlet() throws Exception {
+        action.setHttpServletRequestSupplier(null);
         action.initialize();
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.REQUEST_UNSUPPORTED);
@@ -142,7 +172,8 @@ public class ExtractAuthenticationFlowDecisionTest extends BaseAuthenticationCon
     public void testValidWithAuthority() throws Exception {
         action.initialize();
         ((MockHttpServletRequest) action.getHttpServletRequest()).addParameter(authnFlowField, authnFlowDecision);
-        ((MockHttpServletRequest) action.getHttpServletRequest()).addParameter(authnAuthorityField, authnAuthorityDecision);
+        ((MockHttpServletRequest) action.getHttpServletRequest()).addParameter(authnAuthorityField,
+                authnAuthorityDecision);
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.RESELECT_FLOW);
         AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class, false);
@@ -158,7 +189,8 @@ public class ExtractAuthenticationFlowDecisionTest extends BaseAuthenticationCon
     public void testValidWithAuthorityTrim() throws Exception {
         action.initialize();
         ((MockHttpServletRequest) action.getHttpServletRequest()).addParameter(authnFlowField, " " + authnFlowDecision);
-        ((MockHttpServletRequest) action.getHttpServletRequest()).addParameter(authnAuthorityField, authnAuthorityDecision + " ");
+        ((MockHttpServletRequest) action.getHttpServletRequest()).addParameter(authnAuthorityField,
+                authnAuthorityDecision + " ");
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.RESELECT_FLOW);
         AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class, false);
@@ -174,7 +206,8 @@ public class ExtractAuthenticationFlowDecisionTest extends BaseAuthenticationCon
     public void testInvalidAuthority() throws Exception {
         action.initialize();
         ((MockHttpServletRequest) action.getHttpServletRequest()).addParameter(authnFlowField, authnFlowDecision);
-        ((MockHttpServletRequest) action.getHttpServletRequest()).addParameter(authnAuthorityField, authnAuthorityDecision+"_invalid");
+        ((MockHttpServletRequest) action.getHttpServletRequest()).addParameter(authnAuthorityField,
+                authnAuthorityDecision + "_invalid");
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.REQUEST_UNSUPPORTED);
         AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class, false);
