@@ -5,7 +5,7 @@
 
 ## Overview
 
-This module implements a simple authentication method selection flow for [Shibboleth Identity Provider v4](https://wiki.shibboleth.net/confluence/display/IDP4/Home). The module can be used for first displaying all
+This module implements a simple authentication method selection flow for [Shibboleth Identity Provider v5](https://shibboleth.atlassian.net/wiki/spaces/IDP5/overview). The module can be used for first displaying all
 the available authentication flows and then proceeding with the user-selected authentication flow.
 
 ## Prerequisities and compilation
