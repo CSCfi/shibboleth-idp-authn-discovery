@@ -10,7 +10,7 @@ the available authentication flows and then proceeding with the user-selected au
 
 ## Prerequisities and compilation
 
-- Java 11+
+- Java 17+
 - [Apache Maven 3](https://maven.apache.org/)
 
 ```
