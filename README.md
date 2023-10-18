@@ -54,12 +54,12 @@ then activate the flow in _conf/authn/authn.properties_
 # Example of three active flows
 idp.authn.flows = Disco|SAML|Password
 ```
-add finally following to to any of your active properties files, for instance to _idp.properties_.
+add finally add following to any of your active properties files, for instance to _idp.properties_.
 
 ```
 idp.discovery.authority.properties = %{idp.home}/conf/authn/discovery.properties
 ```
-Depending on your IdP authentication flow configuration the previous may be enough. If so user is first  presented with Discovery view to select between available authentication flows that would be 'Password' and 'SAML' in this example case. If however user is not presented first the Discovery view and 'Disco' flow you need to study the [Shibboleth authentication flow selection mechanism](https://shibboleth.atlassian.net/wiki/spaces/IDP4/pages/1265631603/AuthenticationFlowSelection) and then configure 'Disco' so that it will be the selected flow.
+Depending on your IdP configuration the previous may be enough. If so user is first presented with Discovery view to select between available authentication flows that would be 'Password' and 'SAML' in this example case. If however user is not presented first the Discovery view and 'Disco'-flow  is not executed, you need to study the [Shibboleth authentication flow selection mechanism](https://shibboleth.atlassian.net/wiki/spaces/IDP4/pages/1265631603/AuthenticationFlowSelection) and then configure 'Disco'-flow so that it will be the selected flow.
 
 ### Managing flows available for Relying Party
 Discovery will show all available authentication flows. If you need to limit the flows shown per RP that can and must be done by whatever means Shibboleth offers to solve that. Following example would list only 'SAML' in Discovery options for the group of SPs.
