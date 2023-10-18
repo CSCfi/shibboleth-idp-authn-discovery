@@ -12,7 +12,7 @@
 This module implements a simple authentication method selection flow for [Shibboleth Identity Provider v5](https://shibboleth.atlassian.net/wiki/spaces/IDP5/overview). The module can be used for first displaying all
 the available authentication flows and then proceeding with the user-selected authentication flow.
 
-## Prerequisities and compilation
+## Compilation
 
 - Java 17+
 - [Apache Maven 3](https://maven.apache.org/)
@@ -20,8 +20,6 @@ the available authentication flows and then proceeding with the user-selected au
 ```
 mvn package
 ```
-
-After successful compilation, the _target_ directory contains _shibboleth-idp-authn-discovery-<version>.zip_.
 
 ## Deployment
 
