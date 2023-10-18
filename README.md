@@ -26,7 +26,7 @@ After successful compilation, the _target_ directory contains _shibboleth-idp-au
 ## Deployment
 
 > **Note**
-> Release [2.0.0](https://github.com/CSCfi/shibboleth-idp-authn-discovery/releases/tag/2.0.0) is for Shib Idp v5.
+> Release [2.0.0](https://github.com/CSCfi/shibboleth-idp-authn-discovery/releases/tag/2.0.0) is for Shib Idp v5. Not truly tested yet! Fresh from the oven!
 > Release [1.0.0-rc2](https://github.com/CSCfi/shibboleth-idp-authn-discovery/releases/tag/1.0.0-rc2) is for Shib Idp v4. There is version Releases [1.1.0](https://github.com/CSCfi/shibboleth-idp-authn-discovery/releases/tag/1.1.0) but it seems not be used - so no guarantees on it.
 
 Either compile the module yourself or use assets from releases. The module deployment is done by unpacking the archive to Shibboleth directory and and rebuilding the WAR file:
@@ -61,7 +61,7 @@ add finally following to to any of your active properties files, for instance to
 ```
 idp.discovery.authority.properties = %{idp.home}/conf/authn/discovery.properties
 ```
-Depending on your IdP overall authentication flow configuration the previous may be enough to activate the 'Disco'. If that is the case the basic functionality is in place and user is presented with Discovery view to select between available authentication flows that would be 'Password' and 'SAML' in this example case. If that is not the case you need to study the [Shibboleth authentication flow selection mechanism](https://shibboleth.atlassian.net/wiki/spaces/IDP4/pages/1265631603/AuthenticationFlowSelection) and then configure 'Disco' so that it will be the selected flow.
+Depending on your IdP authentication flow configuration the previous may be enough. If so user is first  presented with Discovery view to select between available authentication flows that would be 'Password' and 'SAML' in this example case. If however user is not presented first the Discovery view and 'Disco' flow you need to study the [Shibboleth authentication flow selection mechanism](https://shibboleth.atlassian.net/wiki/spaces/IDP4/pages/1265631603/AuthenticationFlowSelection) and then configure 'Disco' so that it will be the selected flow.
 
 ### Managing flows available for Relying Party
 Discovery will show all available authentication flows. If you need to limit the flows shown per RP that can and must be done by whatever means Shibboleth offers to solve that. Following example would list only 'SAML' in Discovery options for the group of SPs.
@@ -79,7 +79,7 @@ Discovery will show all available authentication flows. If you need to limit the
 </util:list>    
 ```
 ### Managing upstream providers
-Your IdP SAML flow may be configured to use single upstream discovery url or entity. In that case it is enough for 'Disco' flow to show it as one selectable item and  signal that 'SAML' is the next flow to perform. Upstream provider is determined by the static 'SAML' flow configuration in that case. However If you have multiple upstream discovery urls or entities, as you often do, that is not enough. First you must express somehow to to 'Disco' flow that 'SAML' is not just one selectable item but many. That can be done _conf/authn/discovery.properties_.
+Your IdP SAML flow may be configured to use single upstream discovery url or entity. In that case it is enough for Discovery view to show it as one selectable item and  signal that 'SAML' is the next flow to perform. Upstream provider is determined by the static 'SAML' flow configuration in that case. However If you have multiple upstream discovery urls or entities, as you often do, that is not enough. First you must express somehow to to 'Disco' flow that 'SAML' is not just one selectable item but many. That can be done _conf/authn/discovery.properties_.
 
 You may define Authenticating Authority values per flow in _discovery.properties_. For each value 'Disco' will present separate selectable item in discovery view.
 
@@ -100,7 +100,7 @@ The Authenticating Authority is here treated only as a string and any semantics 
 authn/SAML = discovery:https://ds.example.com/DS, entity:https://idp.example.com/IDP 
 ```
 
-Discoovery view will have now two items for user to select from, one having Authenticating Authority as 'discovery:https://ds.example.com/DS' and second as 'entity:https://idp.example.com/IDP'. This is something we can now use in 'SAML' flow bt implementing beans 'shibboleth.authn.SAML.discoveryFunction' and 'shibboleth.authn.discoveryURLStrategy'.
+Discoovery view will have now two items for user to select from, one having Authenticating Authority as 'discovery:https://ds.example.com/DS' and second as 'entity:https://idp.example.com/IDP'. This is something we can now use in 'SAML' flow by implementing beans 'shibboleth.authn.SAML.discoveryFunction' and 'shibboleth.authn.discoveryURLStrategy'.
 
 > **Warning**
 > The following bean snippets are from IdP v4. May not work as such in v5.
