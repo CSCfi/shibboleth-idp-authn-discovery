@@ -25,7 +25,7 @@ mvn package
 
 > **Note**
 > Release [2.0.0](https://github.com/CSCfi/shibboleth-idp-authn-discovery/releases/tag/2.0.0) is for Shib Idp v5. Not truly tested yet! Fresh from the oven!
-> Release [1.0.0-rc2](https://github.com/CSCfi/shibboleth-idp-authn-discovery/releases/tag/1.0.0-rc2) is for Shib Idp v4. There is version Releases [1.1.0](https://github.com/CSCfi/shibboleth-idp-authn-discovery/releases/tag/1.1.0) but it seems not be used - so no guarantees on it.
+> Release [1.0.0-rc2](https://github.com/CSCfi/shibboleth-idp-authn-discovery/releases/tag/1.0.0-rc2) is for Shib Idp v4.
 
 Either compile the module yourself or use assets from releases. The module deployment is done by unpacking the archive to Shibboleth directory and and rebuilding the WAR file:
 
