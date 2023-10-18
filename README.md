@@ -100,7 +100,7 @@ The Authenticating Authority is here treated only as a string and any semantics 
 authn/SAML = discovery:https://ds.example.com/DS, entity:https://idp.example.com/IDP 
 ```
 
-Discoovery view will have now two items for user to select from, one having Authenticating Authority as 'discovery:https://ds.example.com/DS' and second as 'entity:https://idp.example.com/IDP'. This is something we can now use in 'SAML' flow by implementing beans 'shibboleth.authn.SAML.discoveryFunction' and 'shibboleth.authn.discoveryURLStrategy'.
+Discovery view will have now two items for user to select from, one having Authenticating Authority as 'discovery:https://ds.example.com/DS' and second as 'entity:https://idp.example.com/IDP'. This is something we can now use in 'SAML' flow by implementing beans 'shibboleth.authn.SAML.discoveryFunction' and 'shibboleth.authn.discoveryURLStrategy'.
 
 > **Warning**
 > The following bean snippets are from IdP v4. May not work as such in v5.
