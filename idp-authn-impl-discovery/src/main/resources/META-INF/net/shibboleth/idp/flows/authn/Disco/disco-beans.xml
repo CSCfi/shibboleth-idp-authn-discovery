@@ -38,7 +38,7 @@ THE SOFTWARE.
         p:placeholderPrefix="%{" p:placeholderSuffix="}" />
 
     <bean class="net.shibboleth.idp.profile.impl.ProfileActionBeanPostProcessor" />
-    <bean class="net.shibboleth.ext.spring.config.IdentifiableBeanPostProcessor" />
+    <bean class="net.shibboleth.shared.spring.config.IdentifiableBeanPostProcessor" />
 
     <util:constant id="shibboleth.authn.Disco.populateUIInfo" static-field="java.lang.Boolean.TRUE" />
 
