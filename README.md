@@ -12,6 +12,10 @@
 This module implements a simple authentication method selection flow for [Shibboleth Identity Provider v5](https://shibboleth.atlassian.net/wiki/spaces/IDP5/overview). The module can be used for first displaying all
 the available authentication flows and then proceeding with the user-selected authentication flow.
 
+### Example view of selection view
+![Näyttökuva 2024-09-18 kello 8 29 01](https://github.com/user-attachments/assets/e95e518d-e1b1-456e-a346-a06d6ad56439)
+
+
 ## Compilation
 
 - Java 17+
