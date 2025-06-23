@@ -1,6 +1,6 @@
 /*
  * The MIT License
- * Copyright (c) 2015 CSC - IT Center for Science, http://www.csc.fi
+ * Copyright (c) 2015-2025 CSC - IT Center for Science, http://www.csc.fi
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,8 +41,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fi.csc.shibboleth.authn.AuthenticationDiscoveryContext;
-import net.shibboleth.idp.authn.AbstractExtractionAction;
 import net.shibboleth.idp.authn.AuthenticationFlowDescriptor;
+import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
 import net.shibboleth.idp.profile.IdPEventIds;
 import net.shibboleth.profile.context.RelyingPartyContext;
@@ -51,10 +51,30 @@ import net.shibboleth.shared.component.ComponentInitializationException;
 import net.shibboleth.shared.logic.Constraint;
 
 /**
+ * 
  * This actions populates {@link AuthenticationDiscoveryContext} and attaches it
  * as a subcontext of {@link AuthenticationContext}.
+ * 
+ * If a user selections can be extracted from session it is set as signaled
+ * authentication flow in {@link AuthenticationContext}. The signaled flow is
+ * set without any validations: it is assumed that the upcoming actions (like
+ * for instance the default {@link SelectAuthenticationFlow}) verifies whether
+ * the signaled flow meets the requirements in the context. Finally, the action
+ * builds {@link AuthnEventIds.RESELECT_FLOW} event.
+ *
+ * If the action extracts not only flow but also Authenticating Authority the
+ * values must match flow authority pair defined in
+ * {@link AuthenticationDiscoveryContext}.
+ *
+ * @event {@link AuthnEventIds#REQUEST_UNSUPPORTED}
+ * @event {@link AuthnEventIds#RESELECT_FLOW}
+ * @pre
+ * 
+ *      <pre>
+ *      ProfileRequestContext.getSubcontext(AuthenticationContext.class, false) != null
+ *      </pre>
  */
-public class PopulateDiscoveryContext extends AbstractExtractionAction {
+public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction {
 
     /** Class logger. */
     @Nonnull
@@ -142,7 +162,7 @@ public class PopulateDiscoveryContext extends AbstractExtractionAction {
             return false;
         }
         relyingPartyId = rpCtx.getRelyingPartyId();
-        return true;
+        return super.doPreExecute(profileRequestContext, authenticationContext);
     }
 
     /** {@inheritDoc} */
@@ -151,7 +171,6 @@ public class PopulateDiscoveryContext extends AbstractExtractionAction {
             @Nonnull final AuthenticationContext authenticationContext) {
 
         final Map<String, AuthenticationFlowDescriptor> flows = authenticationContext.getPotentialFlows();
-        final AuthenticationDiscoveryContext discoveryContext = new AuthenticationDiscoveryContext();
         for (final String key : flows.keySet()) {
             if (ignoredFlows.contains(key)) {
                 log.debug("{} Ignoring {} from the context", getLogPrefix(), key);
@@ -173,6 +192,22 @@ public class PopulateDiscoveryContext extends AbstractExtractionAction {
                 }
             }
         }
-        authenticationContext.addSubcontext(discoveryContext, true);
+
+        // Look for prior selection
+        flow = (String) getHttpServletRequest().getSession().getAttribute(FLOW_ATTRIBUTE);
+        authority = (String) getHttpServletRequest().getSession().getAttribute(AUTHORITY_ATTRIBUTE);
+
+        if (flow == null || flow.isBlank()) {
+            return;
+        }
+        log.debug("{} User has prior selection of flow {} and authority {}", getLogPrefix(), flow, authority);
+        if (!validateUserSelection()) {
+            log.debug("{} Prior selection {} {} does not match configured selections", getLogPrefix(), flow, authority);
+            return;
+        }
+        log.info("{} User has prior selection {} {}", getLogPrefix(), flow, authority);
+        signalNextFlow(profileRequestContext, authenticationContext);
+
     }
+
 }

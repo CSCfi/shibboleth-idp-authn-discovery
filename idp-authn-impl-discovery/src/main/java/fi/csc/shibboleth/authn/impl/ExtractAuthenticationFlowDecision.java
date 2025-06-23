@@ -1,6 +1,6 @@
 /*
  * The MIT License
- * Copyright (c) 2015 CSC - IT Center for Science, http://www.csc.fi
+ * Copyright (c) 2015-2025 CSC - IT Center for Science, http://www.csc.fi
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,27 +22,18 @@
  */
 package fi.csc.shibboleth.authn.impl;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-
 import javax.annotation.Nonnull;
-import javax.security.auth.Subject;
 
 import org.opensaml.profile.action.ActionSupport;
 import org.opensaml.profile.context.ProfileRequestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Predicates;
-
 import fi.csc.shibboleth.authn.AuthenticationDiscoveryContext;
 import jakarta.servlet.http.HttpServletRequest;
-import net.shibboleth.idp.authn.AbstractExtractionAction;
-import net.shibboleth.idp.authn.AuthenticationResult;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
 import net.shibboleth.shared.annotation.constraint.NotEmpty;
-import net.shibboleth.shared.collection.Pair;
 import net.shibboleth.shared.logic.Constraint;
 
 /**
@@ -66,7 +57,7 @@ import net.shibboleth.shared.logic.Constraint;
  *      ProfileRequestContext.getSubcontext(AuthenticationContext.class, false) != null
  *      </pre>
  */
-public class ExtractAuthenticationFlowDecision extends AbstractExtractionAction {
+public class ExtractAuthenticationFlowDecision extends AbstractDiscoveryExtractionAction {
 
     /** Class logger. */
     @Nonnull
@@ -80,14 +71,8 @@ public class ExtractAuthenticationFlowDecision extends AbstractExtractionAction 
     /** Parameter name for selected authentication authority. */
     private String selectedAuthorityFieldName;
 
-    /** Authentication flow selected by the user. */
-    private String authnFlow;
-
-    /** Authority selected by the user. */
-    private String selectedAuthority;
-
-    /** Discovery context containing valid flow / authority pairs. */
-    private AuthenticationDiscoveryContext discoveryContext;
+    /** Whether to store user selection to session. */
+    private boolean storeSelection;
 
     /**
      * Set the authnFlow parameter name.
@@ -110,6 +95,16 @@ public class ExtractAuthenticationFlowDecision extends AbstractExtractionAction 
         selectedAuthorityFieldName = fieldName;
     }
 
+    /**
+     * Set whether to store user selection to session.
+     * 
+     * @param store Whether to store user selection to session
+     */
+    public void setStoreSelection(final boolean store) {
+        checkSetterPreconditions();
+        storeSelection = store;
+    }
+
     /** {@inheritDoc} */
     @Override
     protected boolean doPreExecute(@Nonnull final ProfileRequestContext profileRequestContext,
@@ -121,23 +116,17 @@ public class ExtractAuthenticationFlowDecision extends AbstractExtractionAction 
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.REQUEST_UNSUPPORTED);
             return false;
         }
-        authnFlow = request.getParameter(authnFlowFieldName);
-        if (authnFlow == null || authnFlow.isEmpty()) {
+        flow = request.getParameter(authnFlowFieldName);
+        if (flow == null || flow.isEmpty()) {
             log.error("{} No authnFlow in request", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.REQUEST_UNSUPPORTED);
             return false;
         }
-        authnFlow = applyTransforms(authnFlow);
-        discoveryContext = authenticationContext.getSubcontext(AuthenticationDiscoveryContext.class);
-        if (discoveryContext == null) {
-            log.error("{} No discovery context in authentication context", getLogPrefix());
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.INVALID_AUTHN_CTX);
-            return false;
-        }
+        flow = applyTransforms(flow);
         if (selectedAuthorityFieldName != null && request.getParameter(selectedAuthorityFieldName) != null) {
-            selectedAuthority = applyTransforms(request.getParameter(selectedAuthorityFieldName));
+            authority = applyTransforms(request.getParameter(selectedAuthorityFieldName));
         }
-        return true;
+        return super.doPreExecute(profileRequestContext, authenticationContext);
     }
 
     /** {@inheritDoc} */
@@ -150,47 +139,13 @@ public class ExtractAuthenticationFlowDecision extends AbstractExtractionAction 
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.REQUEST_UNSUPPORTED);
             return;
         }
-        log.debug("{} User selected authnFlow {}", getLogPrefix(), authnFlow);
-        authenticationContext.setSignaledFlowId(authnFlow);
-        // circumvent the current requirement for exiting result when signaling a flow
-        final AuthenticationResult result = new AuthenticationResult(authnFlow, new Subject());
-        result.setReuseCondition(Predicates.alwaysFalse());
-        authenticationContext.getActiveResults().put(authnFlow, result);
-        if (selectedAuthority != null && !selectedAuthority.isEmpty()) {
-            authenticationContext.setAuthenticatingAuthority(selectedAuthority);
-            log.debug("{} Set authentication authority {}", getLogPrefix(), selectedAuthority);
+        log.info("{} User selected {} {}", getLogPrefix(), flow, authority);
+        if (storeSelection) {
+            getHttpServletRequest().getSession().setAttribute(FLOW_ATTRIBUTE, flow);
+            getHttpServletRequest().getSession().setAttribute(AUTHORITY_ATTRIBUTE, authority);
         }
         ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.RESELECT_FLOW);
+        signalNextFlow(profileRequestContext, authenticationContext);
     }
 
-    /**
-     * Validates the user selection matches the listed options as Shibboleth
-     * mechanisms do not verify that for Authenticating Authority. The configured
-     * authority value may be url encoded.
-     *
-     * @return true if select matched listed options.
-     */
-    private boolean validateUserSelection() {
-        for (final Pair<String, String> pair : discoveryContext.getFlowsWithAuthorities()) {
-            String configuredAuthority = pair.getSecond();
-            if (authnFlow.equals(pair.getFirst())) {
-                if (selectedAuthority == null && configuredAuthority == null) {
-                    return true;
-                }
-                if (configuredAuthority != null) {
-                    try {
-                        configuredAuthority = java.net.URLDecoder.decode(configuredAuthority,
-                                StandardCharsets.UTF_8.name());
-                        if (configuredAuthority.equals(selectedAuthority)) {
-                            return true;
-                        }
-                    } catch (final UnsupportedEncodingException e) {
-                        log.error("{} Failed url decoding string", getLogPrefix(), e);
-                        // Just move to next one
-                    }
-                }
-            }
-        }
-        return false;
-    }
 }

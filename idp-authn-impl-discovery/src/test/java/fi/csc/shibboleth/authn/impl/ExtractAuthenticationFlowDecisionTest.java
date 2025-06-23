@@ -144,7 +144,7 @@ public class ExtractAuthenticationFlowDecisionTest {
         ((MockHttpServletRequest) action.getHttpServletRequest()).addParameter(authnFlowField, authnFlowDecision2);
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.RESELECT_FLOW);
-        AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class, false);
+        AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class);
         Assert.assertNotNull(authCtx);
         Assert.assertEquals(authCtx.getSignaledFlowId(), authnFlowDecision2);
         Assert.assertNull(authCtx.getAuthenticatingAuthority());
@@ -159,7 +159,7 @@ public class ExtractAuthenticationFlowDecisionTest {
         ((MockHttpServletRequest) action.getHttpServletRequest()).addParameter(authnFlowField, authnFlowDecision);
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.REQUEST_UNSUPPORTED);
-        AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class, false);
+        AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class);
         Assert.assertNotNull(authCtx);
         Assert.assertNull(authCtx.getSignaledFlowId());
         Assert.assertNull(authCtx.getAuthenticatingAuthority());
@@ -176,7 +176,7 @@ public class ExtractAuthenticationFlowDecisionTest {
                 authnAuthorityDecision);
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.RESELECT_FLOW);
-        AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class, false);
+        AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class);
         Assert.assertNotNull(authCtx);
         Assert.assertEquals(authCtx.getSignaledFlowId(), authnFlowDecision);
         Assert.assertEquals(authCtx.getAuthenticatingAuthority(), authnAuthorityDecision);
@@ -193,7 +193,7 @@ public class ExtractAuthenticationFlowDecisionTest {
                 authnAuthorityDecision + " ");
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.RESELECT_FLOW);
-        AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class, false);
+        AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class);
         Assert.assertNotNull(authCtx);
         Assert.assertEquals(authCtx.getSignaledFlowId(), authnFlowDecision);
         Assert.assertEquals(authCtx.getAuthenticatingAuthority(), authnAuthorityDecision);
@@ -210,7 +210,7 @@ public class ExtractAuthenticationFlowDecisionTest {
                 authnAuthorityDecision + "_invalid");
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.REQUEST_UNSUPPORTED);
-        AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class, false);
+        AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class);
         Assert.assertNotNull(authCtx);
         Assert.assertNull(authCtx.getSignaledFlowId());
         Assert.assertNull(authCtx.getAuthenticatingAuthority());
