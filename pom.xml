@@ -32,6 +32,7 @@ THE SOFTWARE.
     <maven.compiler.target>17</maven.compiler.target>
     <shib.idp.version>5.0.0</shib.idp.version>
     <opensaml.version>5.0.0</opensaml.version>
+    <jackson.version>2.15.2</jackson.version>
   </properties>
   <repositories>
     <repository>
@@ -87,6 +88,12 @@ THE SOFTWARE.
         <groupId>jakarta.servlet</groupId>
         <artifactId>jakarta.servlet-api</artifactId>
         <version>6.0.0</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson.version}</version>
         <scope>provided</scope>
       </dependency>
       <!-- Test Dependencies -->

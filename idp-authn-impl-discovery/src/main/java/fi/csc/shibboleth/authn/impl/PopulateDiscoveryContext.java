@@ -33,6 +33,7 @@ import java.util.Properties;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.opensaml.messaging.context.navigate.ChildContextLookup;
 import org.opensaml.profile.action.ActionSupport;
@@ -40,7 +41,11 @@ import org.opensaml.profile.context.ProfileRequestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import fi.csc.shibboleth.authn.AuthenticationDiscoveryContext;
+import fi.csc.shibboleth.authn.conf.DiscoveryConfiguration;
+import fi.csc.shibboleth.authn.conf.DiscoveryFlows;
 import net.shibboleth.idp.authn.AuthenticationFlowDescriptor;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
@@ -83,7 +88,13 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
     /** The list of flow ids to be ignored from the discovery context. */
     private List<String> ignoredFlows;
 
+    /** Properties having list of authenticating authorities per flow. */
+    @Nullable
     private Properties authorityProperties;
+
+    /** JSON initialized alternative configuration to authorityProperties. */
+    @Nullable
+    private DiscoveryConfiguration authorityConfiguration;
 
     /** Relying party id. */
     private String relyingPartyId;
@@ -120,7 +131,12 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
         ignoredFlows = Constraint.isNotNull(flowIds, "List of ignored flow ids cannot be null");
     }
 
-    public void setAuthorityProperties(final String propertiesFile) {
+    /**
+     * Set filename of authenticating authorities property file.
+     * 
+     * @param propertiesFile Filename of authenticating authorities property file
+     */
+    public void setAuthorityProperties(@Nullable final String propertiesFile) {
         checkSetterPreconditions();
         if (propertiesFile == null || propertiesFile.isEmpty()) {
             log.debug("{} No authority properties configured", getLogPrefix());
@@ -132,6 +148,20 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
                 authorityProperties.load(stream);
             } catch (final IOException e) {
                 log.error("{} Error loading {}", getLogPrefix(), propertiesFile, e);
+            }
+        }
+    }
+    
+    /**
+     * Set JSON based alternative configuration to authorityProperties.
+     * @param authorities JSON based alternative configuration to authorityProperties
+     */
+    public void setAuthorities(String authorities) {
+        if (authorities != null && !authorities.isBlank()) {
+            try {
+                authorityConfiguration = DiscoveryConfiguration.parse(authorities);
+            } catch (Exception e) {
+                log.error("{} Failed parsing {}", getLogPrefix(), authorities, e);
             }
         }
     }
@@ -174,7 +204,7 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
         for (final String key : flows.keySet()) {
             if (ignoredFlows.contains(key)) {
                 log.debug("{} Ignoring {} from the context", getLogPrefix(), key);
-            } else {
+            } else if (authorityConfiguration == null){
                 final AuthenticationFlowDescriptor flow = flows.get(key);
                 String authorities = null;
                 if (relyingPartyId != null) {
@@ -190,6 +220,26 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
                 } else {
                     discoveryContext.getFlowsWithAuthorities().add(new Pair<>(flow.getId(), null));
                 }
+            }else {
+                //TODO refactor if - else.
+                final AuthenticationFlowDescriptor flow = flows.get(key);
+                DiscoveryFlows rpConf = authorityConfiguration.getFlowMap().containsKey(relyingPartyId)
+                        ? authorityConfiguration.getFlowMap().get(relyingPartyId)
+                        : authorityConfiguration.getFlowMap().get("default");
+                if (rpConf.getAuthorityMap().containsKey(flow.getId())) {
+                    rpConf.getAuthorityMap().get(flow.getId()).forEach(authority -> {
+                        try {
+                            String authorityValue = authority.toB64UrlEncoded();
+                            log.info("{} Setting authority as {}", getLogPrefix(), authorityValue);
+                            discoveryContext.getFlowsWithAuthorities().add(new Pair<>(flow.getId(), authorityValue));
+                        } catch (JsonProcessingException e) {
+                            log.error("{} Processing exception",getLogPrefix(),e);
+                        }
+                    });
+                }else {
+                    discoveryContext.getFlowsWithAuthorities().add(new Pair<>(flow.getId(), null));
+                }
+                
             }
         }
 
@@ -200,7 +250,6 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
         if (flow == null || flow.isBlank()) {
             return;
         }
-        log.debug("{} User has prior selection of flow {} and authority {}", getLogPrefix(), flow, authority);
         if (!validateUserSelection()) {
             log.debug("{} Prior selection {} {} does not match configured selections", getLogPrefix(), flow, authority);
             return;
