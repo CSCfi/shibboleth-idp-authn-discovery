@@ -24,7 +24,6 @@
 package fi.csc.shibboleth.authn.conf;
 
 import java.util.Base64;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
@@ -41,7 +40,7 @@ import net.shibboleth.shared.annotation.constraint.NotEmpty;
  * Class is responsible of serializing and de-serializing Discovery
  * Authentication Authority JSON Object. Object has three string fields:
  * 
- * acr : Voluntary information for scripts indicating which acr value should be
+ * acr : Mandatory information for scripts indicating which acr value should be
  * used for discovery selection. aaType : Voluntary information for scripts
  * indicating type of the authenticating authority, for instance "issuer",
  * "discovery" or "entity". aaValue : Mandatory information for scripts
@@ -61,7 +60,7 @@ public class DiscoveryAuthenticatingAuthority {
     public final static String AA_VALUE_KEY = "aaValue";
 
     /** Authenticating authority acr. */
-    @Nullable
+    @Nonnull
     @JsonProperty(ACR_KEY)
     private final String acr;
 
@@ -71,7 +70,7 @@ public class DiscoveryAuthenticatingAuthority {
     private final String type;
 
     /** Authenticating authority value. */
-    @Nonnull
+    @Nullable
     @JsonProperty(AA_VALUE_KEY)
     private final String value;
 
@@ -82,11 +81,11 @@ public class DiscoveryAuthenticatingAuthority {
      * @param type  Authenticating authority type
      * @param value Authenticating authority value
      */
-    private DiscoveryAuthenticatingAuthority(@Nullable String acr, @Nullable String type, @Nonnull String value) {
+    private DiscoveryAuthenticatingAuthority(@Nonnull String acr, @Nullable String type, @Nullable String value) {
         this.acr = acr;
         this.type = type;
         this.value = value;
-        assert value != null;
+        assert acr != null;
     }
 
     /**
@@ -94,7 +93,7 @@ public class DiscoveryAuthenticatingAuthority {
      * 
      * @return Authenticating authority acr
      */
-    @Nullable
+    @Nonnull
     public String getAcr() {
         return acr;
     }
@@ -114,7 +113,7 @@ public class DiscoveryAuthenticatingAuthority {
      * 
      * @return Authenticating authority value
      */
-    @Nonnull
+    @Nullable
     public String getValue() {
         return value;
     }
@@ -196,35 +195,4 @@ public class DiscoveryAuthenticatingAuthority {
         throw new Exception("Invalid credential offer requested claim: Parsing failed");
     }
 
-    
-    //hmm.. Move this to strategy that resolves relying parties and all..strategy is beaned in our global!
-    public static DiscoveryAuthenticatingAuthority resolveAuthenticatingAuthorityFromDiscoveryConfiguration(
-            @Nonnull @NotEmpty String relyingPartiesAndFlows, @Nonnull @NotEmpty String rpId,
-            @Nonnull @NotEmpty String acr) throws Exception {
-
-        assert relyingPartiesAndFlows != null;
-        assert !relyingPartiesAndFlows.isBlank();
-        assert rpId != null;
-        assert !rpId.isBlank();
-        assert acr != null;
-        assert !acr.isBlank();
-        
-        DiscoveryConfiguration configuration = DiscoveryConfiguration.parse(relyingPartiesAndFlows);
-        DiscoveryFlows discoveryFlows = configuration.getFlowMap().containsKey(rpId)
-                ? configuration.getFlowMap().get(rpId)
-                : configuration.getFlowMap().get("default");
-        Iterator<String> flows = discoveryFlows.getAuthorityMap().keySet().iterator();
-        while (flows.hasNext()) {
-            String flow = flows.next();
-            Iterator<DiscoveryAuthenticatingAuthority> authorities = discoveryFlows.getAuthorityMap().get(flow)
-                    .iterator();
-            while (authorities.hasNext()) {
-                DiscoveryAuthenticatingAuthority authority = authorities.next();
-                if (acr.equals(authority.getAcr())) {
-                    return authority;
-                }
-            }
-        }
-        return null;
-    }
 }

@@ -42,10 +42,10 @@ public class DiscoveryAuthenticatingAuthorityTest {
 
     @Test
     public void testParsingMinimal() throws Exception {
-        String serialized = "{\"aaValue\":\"anyStringValue\"}";
+        String serialized = "{\"acr\":\"anyStringValue\"}";
         discoveryAuthenticatingAuthority = DiscoveryAuthenticatingAuthority.parse(serialized);
-        Assert.assertNull(discoveryAuthenticatingAuthority.getAcr());
         Assert.assertNull(discoveryAuthenticatingAuthority.getType());
-        Assert.assertEquals(discoveryAuthenticatingAuthority.getValue(), "anyStringValue");
+        Assert.assertNull(discoveryAuthenticatingAuthority.getValue());
+        Assert.assertEquals(discoveryAuthenticatingAuthority.getAcr(), "anyStringValue");
     }
 }
