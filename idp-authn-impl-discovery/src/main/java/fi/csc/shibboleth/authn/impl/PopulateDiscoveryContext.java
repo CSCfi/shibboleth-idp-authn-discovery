@@ -58,18 +58,11 @@ import net.shibboleth.shared.logic.Constraint;
 /**
  * 
  * This actions populates {@link AuthenticationDiscoveryContext} and attaches it
- * as a subcontext of {@link AuthenticationContext}.
+ * as a subcontext of {@link AuthenticationContext} for Discovery view to
+ * present the user as selectable authentication methods.
  * 
- * If a user selections can be extracted from session it is set as signaled
- * authentication flow in {@link AuthenticationContext}. The signaled flow is
- * set without any validations: it is assumed that the upcoming actions (like
- * for instance the default {@link SelectAuthenticationFlow}) verifies whether
- * the signaled flow meets the requirements in the context. Finally, the action
- * builds {@link AuthnEventIds.RESELECT_FLOW} event.
- *
- * If the action extracts not only flow but also Authenticating Authority the
- * values must match flow authority pair defined in
- * {@link AuthenticationDiscoveryContext}.
+ * If a user selections can be extracted and validated already from session it
+ * is set as signaled authentication flow in {@link AuthenticationContext}.
  *
  * @event {@link AuthnEventIds#REQUEST_UNSUPPORTED}
  * @event {@link AuthnEventIds#RESELECT_FLOW}
@@ -151,10 +144,12 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
             }
         }
     }
-    
+
     /**
      * Set JSON based alternative configuration to authorityProperties.
-     * @param authorities JSON based alternative configuration to authorityProperties
+     * 
+     * @param authorities JSON based alternative configuration to
+     *                    authorityProperties
      */
     public void setAuthorities(String authorities) {
         if (authorities != null && !authorities.isBlank()) {
@@ -195,51 +190,76 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
         return super.doPreExecute(profileRequestContext, authenticationContext);
     }
 
+    /**
+     * Add selectable flow to {@link DiscoveryContext} with authenticating
+     * authorities using properties file.
+     * 
+     * @param flow flow to be added
+     */
+    private void addItemsUsingProperties(@Nonnull final AuthenticationFlowDescriptor flow) {
+
+        assert flow != null;
+        String authorities = null;
+        if (relyingPartyId != null) {
+            authorities = (String) authorityProperties.get(relyingPartyId + "." + flow.getId());
+        }
+        if (authorities == null || authorities.isEmpty()) {
+            authorities = (String) authorityProperties.get(flow.getId());
+        }
+        if (authorities != null && !authorities.isEmpty()) {
+            for (final String authority : authorities.split(",")) {
+                discoveryContext.getFlowsWithAuthorities().add(new Pair<>(flow.getId(), authority.trim()));
+            }
+        } else {
+            discoveryContext.getFlowsWithAuthorities().add(new Pair<>(flow.getId(), null));
+        }
+
+    }
+
+    /**
+     * Add selectable flow to {@link DiscoveryContext} with authenticating
+     * authorities using {@link DiscoveryConfiguration}.
+     * 
+     * @param flow flow to be added
+     */
+    private void addItemsUsingDiscoveryConfiguration(@Nonnull final AuthenticationFlowDescriptor flow) {
+
+        assert flow != null;
+        DiscoveryFlows rpConf = authorityConfiguration.getFlowMap().containsKey(relyingPartyId)
+                ? authorityConfiguration.getFlowMap().get(relyingPartyId)
+                : authorityConfiguration.getFlowMap().get("default");
+        if (rpConf.getAuthorityMap().containsKey(flow.getId())) {
+            rpConf.getAuthorityMap().get(flow.getId()).forEach(authority -> {
+                try {
+                    String authorityValue = authority.toB64UrlEncoded();
+                    log.info("{} Setting authority as {}", getLogPrefix(), authorityValue);
+                    discoveryContext.getFlowsWithAuthorities().add(new Pair<>(flow.getId(), authorityValue));
+                } catch (JsonProcessingException e) {
+                    log.error("{} Processing exception", getLogPrefix(), e);
+                }
+            });
+        } else {
+            discoveryContext.getFlowsWithAuthorities().add(new Pair<>(flow.getId(), null));
+        }
+
+    }
+
     /** {@inheritDoc} */
     @Override
     protected void doExecute(@Nonnull final ProfileRequestContext profileRequestContext,
             @Nonnull final AuthenticationContext authenticationContext) {
 
+        // Determine what can be shown for user to select
         final Map<String, AuthenticationFlowDescriptor> flows = authenticationContext.getPotentialFlows();
         for (final String key : flows.keySet()) {
             if (ignoredFlows.contains(key)) {
                 log.debug("{} Ignoring {} from the context", getLogPrefix(), key);
-            } else if (authorityConfiguration == null){
-                final AuthenticationFlowDescriptor flow = flows.get(key);
-                String authorities = null;
-                if (relyingPartyId != null) {
-                    authorities = (String) authorityProperties.get(relyingPartyId + "." + flow.getId());
-                }
-                if (authorities == null || authorities.isEmpty()) {
-                    authorities = (String) authorityProperties.get(flow.getId());
-                }
-                if (authorities != null && !authorities.isEmpty()) {
-                    for (final String authority : authorities.split(",")) {
-                        discoveryContext.getFlowsWithAuthorities().add(new Pair<>(flow.getId(), authority.trim()));
-                    }
-                } else {
-                    discoveryContext.getFlowsWithAuthorities().add(new Pair<>(flow.getId(), null));
-                }
-            }else {
-                //TODO refactor if - else.
-                final AuthenticationFlowDescriptor flow = flows.get(key);
-                DiscoveryFlows rpConf = authorityConfiguration.getFlowMap().containsKey(relyingPartyId)
-                        ? authorityConfiguration.getFlowMap().get(relyingPartyId)
-                        : authorityConfiguration.getFlowMap().get("default");
-                if (rpConf.getAuthorityMap().containsKey(flow.getId())) {
-                    rpConf.getAuthorityMap().get(flow.getId()).forEach(authority -> {
-                        try {
-                            String authorityValue = authority.toB64UrlEncoded();
-                            log.info("{} Setting authority as {}", getLogPrefix(), authorityValue);
-                            discoveryContext.getFlowsWithAuthorities().add(new Pair<>(flow.getId(), authorityValue));
-                        } catch (JsonProcessingException e) {
-                            log.error("{} Processing exception",getLogPrefix(),e);
-                        }
-                    });
-                }else {
-                    discoveryContext.getFlowsWithAuthorities().add(new Pair<>(flow.getId(), null));
-                }
-                
+                continue;
+            }
+            if (authorityConfiguration != null) {
+                addItemsUsingDiscoveryConfiguration(flows.get(key));
+            } else {
+                addItemsUsingProperties(flows.get(key));
             }
         }
 
@@ -251,12 +271,10 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
             return;
         }
         if (!validateUserSelection()) {
-            log.debug("{} Prior selection {} {} does not match configured selections", getLogPrefix(), flow, authority);
+            log.debug("{} Prior selection {} {} is not available", getLogPrefix(), flow, authority);
             return;
         }
         log.info("{} User has prior selection {} {}", getLogPrefix(), flow, authority);
         signalNextFlow(profileRequestContext, authenticationContext);
-
     }
-
 }
