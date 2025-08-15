@@ -29,7 +29,6 @@ import org.opensaml.profile.context.ProfileRequestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fi.csc.shibboleth.authn.AuthenticationDiscoveryContext;
 import jakarta.servlet.http.HttpServletRequest;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
@@ -39,15 +38,9 @@ import net.shibboleth.shared.logic.Constraint;
 /**
  * An action that extracts a selected authentication flow from an HTTP form body
  * or query string and sets it as signaled authentication flow in
- * {@link AuthenticationContext}. The signaled flow is set without any
- * validations: it is assumed that the upcoming actions (like for instance the
- * default {@link SelectAuthenticationFlow}) verifies whether the signaled flow
- * meets the requirements in the context. Finally, the action builds
- * {@link AuthnEventIds.RESELECT_FLOW} event.
+ * {@link AuthenticationContext}. After validating user selection the action
+ * builds {@link AuthnEventIds.RESELECT_FLOW} event.
  *
- * If the action extracts not only flow but also Authenticating Authority the
- * values must match flow authority pair defined in
- * {@link AuthenticationDiscoveryContext}.
  *
  * @event {@link AuthnEventIds#REQUEST_UNSUPPORTED}
  * @event {@link AuthnEventIds#RESELECT_FLOW}
@@ -147,5 +140,4 @@ public class ExtractAuthenticationFlowDecision extends AbstractDiscoveryExtracti
         ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.RESELECT_FLOW);
         signalNextFlow(profileRequestContext, authenticationContext);
     }
-
 }
