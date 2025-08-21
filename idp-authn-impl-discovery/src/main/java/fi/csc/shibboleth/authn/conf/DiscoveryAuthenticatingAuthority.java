@@ -59,6 +59,9 @@ public class DiscoveryAuthenticatingAuthority {
     /** Key of Authenticating Authority Value. */
     public final static String AA_VALUE_KEY = "aaValue";
 
+    /** Key of Hidden property. */
+    public final static String HIDDEN_KEY = "hidden";
+
     /** Authenticating authority acr. */
     @Nonnull
     @JsonProperty(ACR_KEY)
@@ -74,6 +77,10 @@ public class DiscoveryAuthenticatingAuthority {
     @JsonProperty(AA_VALUE_KEY)
     private final String value;
 
+    /** Hidden property. */
+    @JsonProperty(HIDDEN_KEY)
+    private final boolean hidden;
+
     /**
      * Constructor.
      * 
@@ -81,10 +88,12 @@ public class DiscoveryAuthenticatingAuthority {
      * @param type  Authenticating authority type
      * @param value Authenticating authority value
      */
-    private DiscoveryAuthenticatingAuthority(@Nonnull String acr, @Nullable String type, @Nullable String value) {
+    private DiscoveryAuthenticatingAuthority(@Nonnull String acr, @Nullable String type, @Nullable String value,
+            boolean hidden) {
         this.acr = acr;
         this.type = type;
         this.value = value;
+        this.hidden = hidden;
         assert acr != null;
     }
 
@@ -116,6 +125,13 @@ public class DiscoveryAuthenticatingAuthority {
     @Nullable
     public String getValue() {
         return value;
+    }
+
+    /**
+     * Whether item should be hidden from Discovery view.
+     */
+    public boolean isHidden() {
+        return hidden;
     }
 
     /**
@@ -181,16 +197,12 @@ public class DiscoveryAuthenticatingAuthority {
     @Nonnull
     public static DiscoveryAuthenticatingAuthority parse(Object object) throws Exception {
         if (object instanceof Map<?, ?> authenticatingAuthority) {
-            String acr = (authenticatingAuthority.get(ACR_KEY) instanceof String)
-                    ? (String) (authenticatingAuthority.get(ACR_KEY))
-                    : null;
-            String type = (authenticatingAuthority.get(AA_TYPE_KEY) instanceof String)
-                    ? (String) (authenticatingAuthority.get(AA_TYPE_KEY))
-                    : null;
-            String value = (authenticatingAuthority.get(AA_VALUE_KEY) instanceof String)
-                    ? (String) (authenticatingAuthority.get(AA_VALUE_KEY))
-                    : null;
-            return new DiscoveryAuthenticatingAuthority(acr, type, value);
+            String acr = (authenticatingAuthority.get(ACR_KEY) instanceof String item) ? item : null;
+            String type = (authenticatingAuthority.get(AA_TYPE_KEY) instanceof String item) ? item : null;
+            String value = (authenticatingAuthority.get(AA_VALUE_KEY) instanceof String item) ? item : null;
+            boolean hidden = (authenticatingAuthority.get(HIDDEN_KEY) instanceof Boolean item) ? item.booleanValue()
+                    : false;
+            return new DiscoveryAuthenticatingAuthority(acr, type, value, hidden);
         }
         throw new Exception("Invalid credential offer requested claim: Parsing failed");
     }

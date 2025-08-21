@@ -55,19 +55,38 @@ public class PopulateDiscoveryContextTest {
     private RequestContext src;
     private ProfileRequestContext prc;
 
-    private String configuration = "{\n" + "  \"default\": {\n" + "    \"authn/test1\": [\n" + "      {\n"
+    private String configuration = "{\n"
+            + "  \"default\": {\n"
+            + "    \"authn/test1\": [\n" 
+            + "      {\n"
             + "        \"acr\": \"https://dev-user-auth.csc.fi/LoginHakaTest\",\n"
             + "        \"aaType\": \"discovery\",\n"
-            + "        \"aaValue\": \"https://testsp.funet.fi/shibboleth/WAYF\"\n" + "      },\n" + "      {\n"
-            + "        \"acr\": \"https://dev-user-auth.csc.fi/LoginHaka\",\n" + "        \"aaType\": \"entity\",\n"
-            + "        \"aaValue\": \"https://idp.csc.fi/idp/shibboleth\"\n" + "      }\n" + "    ],\n"
-            + "    \"authn/Password\": [\n" + "      {\n"
-            + "        \"acr\": \"https://dev-user-auth.csc.fi/LoginHakaCSC\",\n" + "        \"aaType\": \"entity\",\n"
-            + "        \"aaValue\": \"https://testsp.funet.fi/shibboleth/WAYF\"\n" + "      }\n" + "    ]\n" + "  },\n"
-            + "  \"IK1GX427KQ\": {\n" + "    \"authn/MFA\": [\n" + "      {\n"
+            + "        \"aaValue\": \"https://testsp.funet.fi/shibboleth/WAYF\"\n" 
+            + "      },\n" 
+            + "      {\n"
+            + "        \"acr\": \"https://dev-user-auth.csc.fi/LoginHaka\",\n" 
+            + "        \"aaType\": \"entity\",\n"
+            + "        \"aaValue\": \"https://idp.csc.fi/idp/shibboleth\",\n" 
+            + "        \"hidden\": true\n" 
+            + "      }\n" 
+            + "    ],\n"
+            + "    \"authn/Password\": [\n" 
+            + "      {\n"
+            + "        \"acr\": \"https://dev-user-auth.csc.fi/LoginHakaCSC\",\n" 
+            + "        \"aaType\": \"entity\",\n"
+            + "        \"aaValue\": \"https://testsp.funet.fi/shibboleth/WAYF\"\n" 
+            + "      }\n" 
+            + "    ]\n" 
+            + "  },\n"
+            + "  \"IK1GX427KQ\": {\n" 
+            + "    \"authn/MFA\": [\n" 
+            + "      {\n"
             + "        \"acr\": \"https://dev-user-auth.csc.fi/LoginHakaTest\",\n"
             + "        \"aaType\": \"discovery\",\n"
-            + "        \"aaValue\": \"https://testsp.funet.fi/shibboleth/WAYF\"\n" + "      }\n" + "    ]\n" + "  }\n"
+            + "        \"aaValue\": \"https://testsp.funet.fi/shibboleth/WAYF\"\n" 
+            + "      }\n" 
+            + "    ]\n" 
+            + "  }\n"
             + "}";
 
     protected void initializeMembers() throws ComponentInitializationException {
@@ -156,12 +175,14 @@ public class PopulateDiscoveryContextTest {
         Assert.assertEquals(discoveryAuthenticatingAuthority.getAcr(), "https://dev-user-auth.csc.fi/LoginHakaTest");
         Assert.assertEquals(discoveryAuthenticatingAuthority.getType(), "discovery");
         Assert.assertEquals(discoveryAuthenticatingAuthority.getValue(), "https://testsp.funet.fi/shibboleth/WAYF");
+        Assert.assertFalse(discoveryAuthenticatingAuthority.isHidden());
         Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(1).getFirst(), "authn/test1");
         discoveryAuthenticatingAuthority = DiscoveryAuthenticatingAuthority
                 .parseB64UrlEncoded(discoContext.getFlowsWithAuthorities().get(1).getSecond());
         Assert.assertEquals(discoveryAuthenticatingAuthority.getAcr(), "https://dev-user-auth.csc.fi/LoginHaka");
         Assert.assertEquals(discoveryAuthenticatingAuthority.getType(), "entity");
         Assert.assertEquals(discoveryAuthenticatingAuthority.getValue(), "https://idp.csc.fi/idp/shibboleth");
+        Assert.assertTrue(discoveryAuthenticatingAuthority.isHidden());
         Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(1).getFirst(), "authn/test1");
         Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(2).getFirst(), "authn/test2");
         Assert.assertNull(discoContext.getFlowsWithAuthorities().get(2).getSecond());
