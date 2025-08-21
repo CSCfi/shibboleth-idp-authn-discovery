@@ -29,6 +29,7 @@ public class DiscoveryAuthenticatingAuthorityTest {
         Assert.assertEquals(discoveryAuthenticatingAuthority.getAcr(), "anyStringAcr");
         Assert.assertEquals(discoveryAuthenticatingAuthority.getType(), "anyStringType");
         Assert.assertEquals(discoveryAuthenticatingAuthority.getValue(), "anyStringValue");
+        Assert.assertFalse(discoveryAuthenticatingAuthority.isHidden());
     }
 
     @Test
