@@ -168,7 +168,7 @@ public class PopulateDiscoveryContextTest {
         AuthenticationDiscoveryContext discoContext = authenticationContext
                 .getSubcontext(AuthenticationDiscoveryContext.class);
         Assert.assertNotNull(discoContext);
-        Assert.assertEquals(discoContext.getFlowsWithAuthorities().size(), 4);
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().size(), 3);
         Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(0).getFirst(), "authn/test1");
         DiscoveryAuthenticatingAuthority discoveryAuthenticatingAuthority = DiscoveryAuthenticatingAuthority
                 .parseB64UrlEncoded(discoContext.getFlowsWithAuthorities().get(0).getSecond());
@@ -176,18 +176,10 @@ public class PopulateDiscoveryContextTest {
         Assert.assertEquals(discoveryAuthenticatingAuthority.getType(), "discovery");
         Assert.assertEquals(discoveryAuthenticatingAuthority.getValue(), "https://testsp.funet.fi/shibboleth/WAYF");
         Assert.assertFalse(discoveryAuthenticatingAuthority.isHidden());
-        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(1).getFirst(), "authn/test1");
-        discoveryAuthenticatingAuthority = DiscoveryAuthenticatingAuthority
-                .parseB64UrlEncoded(discoContext.getFlowsWithAuthorities().get(1).getSecond());
-        Assert.assertEquals(discoveryAuthenticatingAuthority.getAcr(), "https://dev-user-auth.csc.fi/LoginHaka");
-        Assert.assertEquals(discoveryAuthenticatingAuthority.getType(), "entity");
-        Assert.assertEquals(discoveryAuthenticatingAuthority.getValue(), "https://idp.csc.fi/idp/shibboleth");
-        Assert.assertTrue(discoveryAuthenticatingAuthority.isHidden());
-        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(1).getFirst(), "authn/test1");
-        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(2).getFirst(), "authn/test2");
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(1).getFirst(), "authn/test2");
+        Assert.assertNull(discoContext.getFlowsWithAuthorities().get(1).getSecond());
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(2).getFirst(), "authn/test3");
         Assert.assertNull(discoContext.getFlowsWithAuthorities().get(2).getSecond());
-        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(3).getFirst(), "authn/test3");
-        Assert.assertNull(discoContext.getFlowsWithAuthorities().get(3).getSecond());
     }
 
 }

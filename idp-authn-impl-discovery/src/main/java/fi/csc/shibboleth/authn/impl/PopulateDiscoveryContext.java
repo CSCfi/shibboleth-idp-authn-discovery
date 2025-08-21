@@ -231,9 +231,12 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
         if (rpConf.getAuthorityMap().containsKey(flow.getId())) {
             rpConf.getAuthorityMap().get(flow.getId()).forEach(authority -> {
                 try {
-                    String authorityValue = authority.toB64UrlEncoded();
-                    log.info("{} Setting authority as {}", getLogPrefix(), authorityValue);
-                    discoveryContext.getFlowsWithAuthorities().add(new Pair<>(flow.getId(), authorityValue));
+                    if (!authority.isHidden()) {
+                        String authorityValue = authority.toB64UrlEncoded();
+                        log.debug("{} Setting authority as {}", getLogPrefix(), authorityValue);
+                        discoveryContext.getFlowsWithAuthorities().add(new Pair<>(flow.getId(), authorityValue));
+                    }
+
                 } catch (JsonProcessingException e) {
                     log.error("{} Processing exception", getLogPrefix(), e);
                 }
