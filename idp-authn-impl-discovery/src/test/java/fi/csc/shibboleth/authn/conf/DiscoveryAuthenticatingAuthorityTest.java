@@ -21,6 +21,7 @@ public class DiscoveryAuthenticatingAuthorityTest {
         authenticatingAuthority.put(DiscoveryAuthenticatingAuthority.ACR_KEY, "anyStringAcr");
         authenticatingAuthority.put(DiscoveryAuthenticatingAuthority.AA_TYPE_KEY, "anyStringType");
         authenticatingAuthority.put(DiscoveryAuthenticatingAuthority.AA_VALUE_KEY, "anyStringValue");
+        authenticatingAuthority.put(DiscoveryAuthenticatingAuthority.FLOW_KEY, "anyStringFlow");
         authenticatingAuthority.put(DiscoveryAuthenticatingAuthority.NAME_KEY, "anyStringName");
         authenticatingAuthority.put(DiscoveryAuthenticatingAuthority.HIDDEN_KEY, true);
         discoveryAuthenticatingAuthority = DiscoveryAuthenticatingAuthority.parse(authenticatingAuthority);
@@ -32,6 +33,7 @@ public class DiscoveryAuthenticatingAuthorityTest {
         Assert.assertEquals(discoveryAuthenticatingAuthority.getType(), "anyStringType");
         Assert.assertEquals(discoveryAuthenticatingAuthority.getValue(), "anyStringValue");
         Assert.assertEquals(discoveryAuthenticatingAuthority.getName(), "anyStringName");
+        Assert.assertEquals(discoveryAuthenticatingAuthority.getFlow(), "anyStringFlow");
         Assert.assertTrue(discoveryAuthenticatingAuthority.isHidden());
     }
 
@@ -42,6 +44,8 @@ public class DiscoveryAuthenticatingAuthorityTest {
         Assert.assertEquals(discoveryAuthenticatingAuthority.getAcr(), "anyStringAcr");
         Assert.assertEquals(discoveryAuthenticatingAuthority.getType(), "anyStringType");
         Assert.assertEquals(discoveryAuthenticatingAuthority.getValue(), "anyStringValue");
+        Assert.assertEquals(discoveryAuthenticatingAuthority.getFlow(), "anyStringFlow");
+        Assert.assertTrue(discoveryAuthenticatingAuthority.isHidden());
     }
 
     @Test
@@ -50,6 +54,7 @@ public class DiscoveryAuthenticatingAuthorityTest {
         discoveryAuthenticatingAuthority = DiscoveryAuthenticatingAuthority.parse(serialized);
         Assert.assertNull(discoveryAuthenticatingAuthority.getType());
         Assert.assertNull(discoveryAuthenticatingAuthority.getValue());
+        Assert.assertNull(discoveryAuthenticatingAuthority.getFlow());
         Assert.assertEquals(discoveryAuthenticatingAuthority.getAcr(), "https://test.com/acrname");
         Assert.assertEquals(discoveryAuthenticatingAuthority.getName(), "acrname");
     }
