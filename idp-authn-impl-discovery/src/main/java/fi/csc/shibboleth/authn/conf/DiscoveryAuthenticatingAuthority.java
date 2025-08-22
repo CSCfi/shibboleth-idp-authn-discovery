@@ -59,6 +59,9 @@ public class DiscoveryAuthenticatingAuthority {
     /** Key of Authenticating Authority Value. */
     public final static String AA_VALUE_KEY = "aaValue";
 
+    /** Key of Name property. */
+    public final static String NAME_KEY = "name";
+
     /** Key of Hidden property. */
     public final static String HIDDEN_KEY = "hidden";
 
@@ -77,6 +80,16 @@ public class DiscoveryAuthenticatingAuthority {
     @JsonProperty(AA_VALUE_KEY)
     private final String value;
 
+    /** Name. */
+    @Nullable
+    @JsonProperty(NAME_KEY)
+    private final String name;
+
+    @Nonnull
+    public String getName() {
+        return (name != null && !name.isBlank()) ? name : acr.substring(acr.lastIndexOf("/") + 1);
+    }
+
     /** Hidden property. */
     @JsonProperty(HIDDEN_KEY)
     private final boolean hidden;
@@ -89,11 +102,12 @@ public class DiscoveryAuthenticatingAuthority {
      * @param value Authenticating authority value
      */
     private DiscoveryAuthenticatingAuthority(@Nonnull String acr, @Nullable String type, @Nullable String value,
-            boolean hidden) {
+            @Nullable String name, boolean hidden) {
         this.acr = acr;
         this.type = type;
         this.value = value;
         this.hidden = hidden;
+        this.name = name;
         assert acr != null;
     }
 
@@ -199,10 +213,11 @@ public class DiscoveryAuthenticatingAuthority {
         if (object instanceof Map<?, ?> authenticatingAuthority) {
             String acr = (authenticatingAuthority.get(ACR_KEY) instanceof String item) ? item : null;
             String type = (authenticatingAuthority.get(AA_TYPE_KEY) instanceof String item) ? item : null;
+            String name = (authenticatingAuthority.get(NAME_KEY) instanceof String item) ? item : null;
             String value = (authenticatingAuthority.get(AA_VALUE_KEY) instanceof String item) ? item : null;
             boolean hidden = (authenticatingAuthority.get(HIDDEN_KEY) instanceof Boolean item) ? item.booleanValue()
                     : false;
-            return new DiscoveryAuthenticatingAuthority(acr, type, value, hidden);
+            return new DiscoveryAuthenticatingAuthority(acr, type, value, name, hidden);
         }
         throw new Exception("Invalid credential offer requested claim: Parsing failed");
     }
