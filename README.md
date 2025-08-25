@@ -228,7 +228,7 @@ Let's go item by by what we have configured here. Each of the JSON Objects in th
     * Optional string. Helper to for instance resolve logo or text for the item in Discovery view.
 *   flow
     * Optional string. Helper to direct user to next flow in MFA configuration.
-*.  hidden
+*   hidden
     * Optional boolean. If set to true, item is not shown in Discovery. Information can still be used by scripts to match requested acr values to upstream providers.   
 ```
       {
