@@ -221,7 +221,7 @@ Let's go item by by what we have configured here. Each of the JSON Objects in th
 *   acr
     * Mandatory string. Authentication Context Class value for the item. This is used by our scripts as if the original authentication request had this value. We want shibboleth internal machinery work the same way regardless the original request had the acr or if it was chosen by user in discovery view.
 *   aaType
-    * Optional string. Type of the Authenticating Authority. We use types 'issuer','discovery' and 'entity' to act accordingly in scripts to direct user to oidc issuer, saml discovery or saml entity. 
+    * Optional string. Type of the Authenticating Authority. We use types 'issuer','discovery' and 'entity' in scripts to direct user to oidc issuer, saml discovery or saml entity. 
 *   aaValue
     * Optional string. Value of Authenticating Authority. We set there value of 'issuer', 'discovery' or 'entity' for scripts to later apply.
 *   name
