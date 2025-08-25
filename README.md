@@ -238,4 +238,48 @@ Let's go item by by what we have configured here. Each of the JSON Objects in th
         "name": "MethodOne"
       }
 ``` 
-This will appear to disco as one selectable item.
+This will appear to disco as one selectable item. Here is now a example discovery.vm that uses this new structure. Notice the use of helper DiscoveryAuthenticatingAuthority to parse the Authenticating Authority information and resolve the name to show correct image and helper texts. Please note also the example template most likely does not work as is. 
+
+```
+#set ($flowList = $authenticationDiscoveryContext.getFlowsWithAuthorities())
+#set ($DiscoveryAuthenticatingAuthority=$flowList.class.forName('fi.csc.shibboleth.authn.conf.DiscoveryAuthenticatingAuthority'))
+<!DOCTYPE html>
+<html>
+  #set ($discoFlowId = $authenticationContext.getAttemptedFlow().getId())
+  <head>
+    <meta charset="utf-8">
+    <title>#springMessageText("idp.title", "Web Login Service")</title>
+    <link rel="stylesheet" type="text/css" href="$request.getContextPath()/css/main.css">
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="container">
+        <header>
+          <img src="$request.getContextPath()#springMessage("idp.logo")" alt="#springMessageText("idp.logo.alt-text", "logo")">
+        </header>
+        <div class="content">
+          <div class="column one">
+            #foreach ($mapEntry in $flowList)
+              #if ($mapEntry.second)
+               #set ($messageKey = $mapEntry.first + "." + $mapEntry.second + ".message")
+               #set ($link = $flowExecutionUrl + "&j_authnflow=" + $mapEntry.first + "&j_authnauthority="+ $mapEntry.second + "&_eventId_proceed=_eventId_proceed")
+               #set ($name = $DiscoveryAuthenticatingAuthority.parseB64UrlEncoded($mapEntry.second).getName())
+               #set ($imageName = "/images/" + $name + ".png")
+               #set ($propertyName = "discovery-name." + $name)
+               <c-login-button tabindex="" href="$link#if($csrfToken)&${csrfToken.parameterName}=${csrfToken.token}#{else}#end" src="$imageName" alt="#springMessageText($propertyName, $name)">
+              #springMessageText($propertyName, "Login")
+              </c-login-button>
+              #end
+            #end
+          </div>
+        </div>
+      </div>
+      <footer>
+    <div class="container container-footer">
+          <p class="footer-text">#springMessageText("idp.footer", "Insert your footer text here.")</p>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
+``` 
