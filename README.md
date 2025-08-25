@@ -13,7 +13,7 @@ This module implements a simple authentication method selection flow for [Shibbo
 the available authentication flows and then proceeding with the user-selected authentication flow.
 
 ### Example of selection view
-![Näyttökuva 2024-09-18 kello 8 29 01](https://github.com/user-attachments/assets/e95e518d-e1b1-456e-a346-a06d6ad56439)
+![Näyttökuva 2024-09-18 kello 8 29 01](https://github.com/user-attachments/assets/e95e518d-e1b1-456e-a346-a06d6ad56439)
 
 
 ## Compilation
@@ -28,7 +28,7 @@ mvn package
 ## Deployment
 
 > **Note**
-> Release [2.0.0](https://github.com/CSCfi/shibboleth-idp-authn-discovery/releases/tag/2.0.0) is for Shib Idp v5.
+> Release [2.1.0](https://github.com/CSCfi/shibboleth-idp-authn-discovery/releases/tag/2.1.0) is for Shib Idp v5.
 > Release [1.0.0-rc2](https://github.com/CSCfi/shibboleth-idp-authn-discovery/releases/tag/1.0.0-rc2) is for Shib Idp v4.
 
 Either compile the module yourself or use assets from releases. The module deployment is done by unpacking the archive to Shibboleth directory and and rebuilding the WAR file:
@@ -160,3 +160,82 @@ Discovery view will have now two items for user to select from, one having Authe
       </constructor-arg>
 </bean>
 ```
+### Version 2.1.0 and JSON configuration
+Version 2.1.0 provides alternate way to configure discovery items in a single json string and a helper to apply details of selected item in later stages. Here is an example of such string for a setup where we want to direct all requests for MFA authentication configuration to handle.
+
+```
+idp.discovery.authorities = {
+  "default": {
+    "authn/MFA": [
+      {
+        "aaType": "discovery",
+        "acr": "https://example.com/LoginMethodOne",
+        "aaValue": "https://wayf.com/WAYF",
+        "name": "MethodOne"
+      },
+      {
+        "aaType": "discovery",
+        "acr": "https://example.com/LoginMethodOneMFA",
+        "aaValue": "https://wayf.com/WAYF",
+        "hidden": true
+      },
+      {
+        "aaType": "entity",
+        "acr": "https://example.com/LoginMethodTwo",
+        "aaValue": "https://idp.com/idp"
+      },
+      {
+        "aaType": "issuer",
+        "acr": "https://example.com/LoginMethodThree",
+        "aaValue": "https://issuer.com/issuer"
+      },
+      {
+        "acr": "https://example.com/LoginLocalPassword"
+      },
+      {
+        "acr": "https://example.com/LoginLocalPasswordMFA",
+        "hidden": true
+      },
+      {
+        "acr": "https://example.com/LoginCandourID",
+        "flow": "authn/candourid"
+      }
+    ]
+  },
+  "https://rp.with.specific.needs.com": {
+    "authn/MFA": [
+      {
+        "aaType": "discovery",
+        "acr": "https://example.com/LoginMethodOne",
+        "aaValue": "https://wayf.com/WAYF"
+      },
+      {
+        "acr": "https://example.com/LoginLocalPassword"
+      }
+    ]
+  }
+}
+```
+Let's go item by by what we have configured here. Each of the JSON Objects in the "authn/MFA" array represent a Authenticating Authority information to be shown in Discovery for user to select. Notice that most of the fields have meaning only because scripts running in later phases apply the information and act accordingly. The fields of the object are
+
+*   acr
+    * Mandatory string. Authentication Context Class value for the item. This is used by our scripts as if the original authentication request had this value. We want shibboleth internal machinery work the same way regardless the original request had the acr or if it was chosen by user in discovery view.
+*   aaType
+    * Optional string. Type of the Authenticating Authority. We use types 'issuer','discovery' and 'entity' to act accordingly in scripts to direct user to oidc issuer, saml discovery or saml entity. 
+*   aaValue
+    * Optional string. Value of Authenticating Authority. We set there value of 'issuer', 'discovery' or 'entity' for scripts to later apply.
+*   name
+    * Optional string. Helper to for instance resolve logo or text for the item in Discovery view.
+*   flow
+    * Optional string. Helper to direct user to next flow in MFA configuration.
+*.  hidden
+    * Optional boolean. If set to true, item is not shown in Discovery. Information can still be used by scripts to match requested acr values to upstream providers.   
+```
+      {
+        "aaType": "discovery",
+        "acr": "https://example.com/LoginMethodOne",
+        "aaValue": "https://wayf.com/WAYF",
+        "name": "MethodOne"
+      }
+``` 
+This will appear to disco as one selectable item.
