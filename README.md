@@ -1,7 +1,7 @@
 # Shibboleth IdP Authn Flow Discovery
 
 > **Warning**
-> This module is developed and has been used only in-house and that reflects on level of GH documentation.
+> This module is developed and has been used only in-house and that reflects on level of GH documentation. None of our admins ever read this anyway.
 > The documentation is just some notes to a reader assumed to be familiar with Shibboleth and just wants to have a go with this module. 
 
 [![License](http://img.shields.io/:license-mit-blue.svg)](https://opensource.org/licenses/MIT)
@@ -403,7 +403,7 @@ Discovery can still be configured to signal any flow as next flow. There are obv
     </constructor-arg>
 </bean>
 ```
-### Version 2.1.0 and upstream providers for OIDC and SAML
+### Version 2.1.0 and upstream providers for OIDC and SAML authentication flows
 The new helper classes are in these examples used to parse upstream Authenticating Authority information. There are two options again. Either user has already selected the AA information by using the Disco or Disco has been bypassed by using ACR in the request. In the latter case _csc.discoveryFunction_ searches for matching AA JSON configuration per requested principal. As a result bean is able to return issuer or entity id value, or in the case of discovery, null is returned and discovery url is stored for _shibboleth.authn.discoveryURLStrategy_ to return it for saml flow.
 
 > **Warning**
@@ -507,3 +507,6 @@ The new helper classes are in these examples used to parse upstream Authenticati
 
 ```
 
+# More helpers
+Following library offers some helpers we use in our proxies. New keys to upstream acr translation, managing multiple upstream oidc credentials etc.
+[https://github.com/CSCfi/shibboleth-idp-plugin-csc-library][https://github.com/CSCfi/shibboleth-idp-plugin-csc-library]
