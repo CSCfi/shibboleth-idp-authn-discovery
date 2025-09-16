@@ -283,3 +283,123 @@ This will appear to disco as one selectable item. Here is now a example discover
   </body>
 </html>
 ``` 
+
+### Version 2.1.0 and MFA configuration
+Discovery can still be configured to signal any flow as next flow. There are obvious benefits for having only two active flows though, Disco and MFA. Having all authentication orchestrated by MFA configuration means that we have also one single location to manage information provided by Disco flow. As a result JSON configuration can be used not only as a way to describe what is shown in Discovery but also to limit what ACR values can be used per RP.
+
+> **Warning**
+> The following bean snippets are example and should not be used as is.
+
+```
+<bean id="discovery.authorities" class="java.lang.String" c:_0="%{idp.discovery.authorities}" />
+```
+
+```
+<!--
+        Your first step in MFA configuration that selects next flow based on ACR/Disco JSON.
+        Script assumes RPs may request for only one ACR.
+-->
+<bean id="selectFirstFactor" parent="shibboleth.ContextFunctions.Scripted" factory-method="inlineScript" p:customObject-ref="discovery.authorities">
+    <constructor-arg>
+        <value>
+            <![CDATA[
+                
+                nextFlow = null;
+                logger = Java.type("org.slf4j.LoggerFactory").getLogger("net.shibboleth.idp.authn");
+                authCtx = input.getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
+                var discoveryAuthenticatingAuthority = null; 
+                if (authCtx.getAuthenticatingAuthority() != null){
+                    // User seems to have been presented with Disco. We resolve discoveryAuthenticatingAuthority from Disco selection.
+                    // Based on what is provided in JSON configuration as acr we set requested prinncipal.
+
+                    //Downstream protocol determines the principal type.
+                    AuthenticationContextClassReferencePrincipal = "http://shibboleth.net/ns/profiles/oidc/sso/browser".equals(input.getProfileId()) ?
+                                                               Java.type("net.shibboleth.oidc.authn.principal.AuthenticationContextClassReferencePrincipal"):
+                                                               Java.type("net.shibboleth.idp.saml.authn.principal.AuthnContextClassRefPrincipal");
+                    
+                    selection = authCtx.getAuthenticatingAuthority();
+                    DiscoveryAuthenticatingAuthority = Java.type("fi.csc.shibboleth.authn.conf.DiscoveryAuthenticatingAuthority");
+                    discoveryAuthenticatingAuthority = DiscoveryAuthenticatingAuthority.parseB64UrlEncoded(selection);
+                    var principal = new AuthenticationContextClassReferencePrincipal(discoveryAuthenticatingAuthority.getAcr());
+                    logger.info("User selection matched to ACR {}", principal);
+                    ArrayList = Java.type("java.util.ArrayList");
+                    var principals = new ArrayList();
+                    principals.add(principal);
+
+                    RequestedPrincipalContext = Java.type("net.shibboleth.idp.authn.context.RequestedPrincipalContext");
+                    requestedPrincipalContext = new RequestedPrincipalContext();
+                    requestedPrincipalContext.setPrincipalEvalPredicateFactoryRegistry(authCtx.getPrincipalEvalPredicateFactoryRegistry());
+                    requestedPrincipalContext.setOperator("exact");
+                    requestedPrincipalContext.setRequestedPrincipals(principals);
+                    authCtx.addSubcontext(requestedPrincipalContext, true);
+                } else {
+                    // RP has bypassed Disco by setting ACR  matching MFA configuration.
+                    // We verify client has JSON configuration matching ACR and resolve discoveryAuthenticatingAuthority 
+                    DiscoveryConfiguration = Java.type("fi.csc.shibboleth.authn.conf.DiscoveryConfiguration");
+                    var discoveryConfiguration = DiscoveryConfiguration.parse(custom);
+                    var RelyingPartyIdLookupFunction = Java.type("net.shibboleth.profile.context.navigate.RelyingPartyIdLookupFunction");
+                    var relyingPartyIdLookupFunction = new RelyingPartyIdLookupFunction();
+                    rpId = relyingPartyIdLookupFunction.apply(input);
+                    var discoveryFlows = discoveryConfiguration.getFlowMap().containsKey(rpId)
+                      ? discoveryConfiguration.getFlowMap().get(rpId)
+                      : discoveryConfiguration.getFlowMap().get("default");
+                    var requestedPrincipalContext = authCtx.getSubcontext("net.shibboleth.idp.authn.context.RequestedPrincipalContext");
+                    if (requestedPrincipalContext != null) {
+                        requestedPrincipals = requestedPrincipalContext.getRequestedPrincipals();
+                        if (requestedPrincipals != null) {
+                            iterator = requestedPrincipals.iterator();
+                            while (iterator.hasNext()) {
+                                principal = iterator.next();
+                                logger.debug("selectFirstFactor matching {}", principal);
+                                flows = discoveryFlows.getAuthorityMap().keySet().iterator();
+                                while (flows.hasNext()){
+                                    flow = flows.next();
+                                    authorities = discoveryFlows.getAuthorityMap().get(flow).iterator();
+                                    while (authorities.hasNext()){
+                                        authority = authorities.next();
+                                        if (principal.getName().equals(authority.getAcr())) {
+                                            discoveryAuthenticatingAuthority = authority;
+                                            break;
+                                        }
+                                    }
+                                    if (discoveryAuthenticatingAuthority != null) {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Now we have discoveryAuthenticatingAuthority unless request is unsupported for RP.
+                // next flow resolved from JSON configuration optional field flow.
+                if (discoveryAuthenticatingAuthority != null && discoveryAuthenticatingAuthority.getFlow() != null) {
+                    nextFlow = discoveryAuthenticatingAuthority.getFlow();
+                }
+
+                // Next flow resolved from ACR value, one of the many other options..
+                if (discoveryAuthenticatingAuthority != null && discoveryAuthenticatingAuthority.getFlow() == null) {
+                    switch (discoveryAuthenticatingAuthority.getAcr()) {
+                      
+                      case "yourAcrOne":
+                      case "yourAcrTwo":
+                        nextFlow = "authn/OIDCRelyingParty";
+                        break;
+                      
+                      default:
+                        nextFlow = "authn/SAML";
+                    }
+                }
+                // RP has asked for ACR that is not supported.
+                if (nextFlow == null){
+                    logger.error("selectFirstFactor unable to pick method for requested acr");
+                    mfaCtx = authCtx.getSubcontext("net.shibboleth.idp.authn.context.MultiFactorAuthenticationContext");
+                    mfaCtx.setEvent("RequestUnsupported");
+                }
+                logger.debug("selectFirstFactor picked {} as next flow", nextFlow);
+                nextFlow;
+            ]]>
+        </value>
+    </constructor-arg>
+</bean>
+```
