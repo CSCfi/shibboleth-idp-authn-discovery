@@ -509,4 +509,5 @@ The new helper classes are in these examples used to parse upstream Authenticati
 
 # More helpers
 Following library offers some helpers we use in our proxies. New keys to upstream acr translation, managing multiple upstream oidc credentials etc.
-[https://github.com/CSCfi/shibboleth-idp-plugin-csc-library][https://github.com/CSCfi/shibboleth-idp-plugin-csc-library]
+
+https://github.com/CSCfi/shibboleth-idp-plugin-csc-library
