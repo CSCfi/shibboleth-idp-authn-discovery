@@ -404,7 +404,7 @@ Discovery can still be configured to signal any flow as next flow. There are obv
 </bean>
 ```
 ### Version 2.1.0 and upstream providers for OIDC and SAML
-The new helper classes are in these examples used to parse upstream Authenticating Authority information. There are two options again. Either user has already selected the AA information by using the Disco or Disco has been bypassed by using ACR in the request. In the latter case _discovery.authorities_ searches for matching AA JSON configuration per requested principal. As a result bean is able to return issuer or entity id value, or in the case of discovery, null is returned and discovery url is stored for _shibboleth.authn.discoveryURLStrategy_ to return it for saml flow.
+The new helper classes are in these examples used to parse upstream Authenticating Authority information. There are two options again. Either user has already selected the AA information by using the Disco or Disco has been bypassed by using ACR in the request. In the latter case _csc.discoveryFunction_ searches for matching AA JSON configuration per requested principal. As a result bean is able to return issuer or entity id value, or in the case of discovery, null is returned and discovery url is stored for _shibboleth.authn.discoveryURLStrategy_ to return it for saml flow.
 
 > **Warning**
 > The following bean snippets are example and should not be used as is.
