@@ -296,7 +296,7 @@ Discovery can still be configured to signal any flow as next flow. There are obv
 
 ```
 <!--
-        Your first step in MFA configuration that selects next flow based on ACR/Disco JSON.
+        Your first step in MFA configuration that selects next flow by AA information provided by Disco or AA information located by requested princpal.
         Script assumes RPs may request for only one ACR.
 -->
 <bean id="selectFirstFactor" parent="shibboleth.ContextFunctions.Scripted" factory-method="inlineScript" p:customObject-ref="discovery.authorities">
