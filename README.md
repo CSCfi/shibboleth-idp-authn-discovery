@@ -285,7 +285,7 @@ This will appear to disco as one selectable item. Here is now a example discover
 ``` 
 
 ### Version 2.1.0 and MFA configuration
-Discovery can still be configured to signal any flow as next flow. There are obvious benefits for having only two active flows though, Disco and MFA. Having all authentication orchestrated by MFA configuration means that we have also one single location to manage information provided by Disco flow. As a result JSON configuration can be used not only as a way to describe what is shown in Discovery but also to limit what ACR values can be used per RP.
+Discovery can still be configured to signal any flow as next flow. There are obvious benefits for having only two active flows though, Disco and MFA. Having all authentication orchestrated by MFA configuration means that we have also one single location to manage information provided by Disco flow. As a result JSON configuration can be used not only as a way to describe what is shown in Discovery but also to limit what ACR values can be used by RP.
 
 > **Warning**
 > The following bean snippets are example and should not be used as is.
