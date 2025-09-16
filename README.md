@@ -372,12 +372,12 @@ Discovery can still be configured to signal any flow as next flow. There are obv
                 }
 
                 // Now we have discoveryAuthenticatingAuthority unless request is unsupported for RP.
-                // next flow resolved from JSON configuration optional field flow.
+                // 1st way to pick next flow. Resolve it from JSON configuration optional field 'flow'.
                 if (discoveryAuthenticatingAuthority != null && discoveryAuthenticatingAuthority.getFlow() != null) {
                     nextFlow = discoveryAuthenticatingAuthority.getFlow();
                 }
 
-                // Next flow resolved from ACR value, one of the many other options..
+                // 2nd way to pick next flow. Use ACR value.
                 if (discoveryAuthenticatingAuthority != null && discoveryAuthenticatingAuthority.getFlow() == null) {
                     switch (discoveryAuthenticatingAuthority.getAcr()) {
                       
