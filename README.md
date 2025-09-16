@@ -403,3 +403,107 @@ Discovery can still be configured to signal any flow as next flow. There are obv
     </constructor-arg>
 </bean>
 ```
+### Version 2.1.0 and upstream providers for OIDC and SAML
+The new helper classes are in these examples used to parse upstream Authenticating Authority information. There are two options again. Either user has already selected the AA information by using the Disco or it has been bypassed by using ACR in the request. In the latter case bean searches for matching AA JSON configuration per requested principal. As a result bean is able to return issuer or entity id value or in the case of discovery, null is returned and and the last bean returns discovery url for saml flow.
+
+> **Warning**
+> The following bean snippets are example and should not be used as is.
+
+```
+<bean id="discovery.authorities" class="java.lang.String" c:_0="%{idp.discovery.authorities}" />
+
+<bean id="csc.discoveryFunction" parent="shibboleth.ContextFunctions.Scripted" factory-method="inlineScript" p:customObject-ref="discovery.authorities">
+  <constructor-arg>
+    <value>
+      <![CDATA[
+      logger = Java.type("org.slf4j.LoggerFactory").getLogger("csc.discoveryFunction");
+      logger.debug("DiscoveryFunction selecting entity id (or passing discovery information)");
+      entityId = null;
+      authnContext = input.getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
+      requestedPrincipalContext = authnContext.getSubcontext("net.shibboleth.idp.authn.context.RequestedPrincipalContext");
+      selection = null;
+      if (authnContext.getAuthenticatingAuthority() != null){
+          // User seems to have been presented with Disco
+          selection = authnContext.getAuthenticatingAuthority();
+          logger.debug("User selection by Disco for Authenticating Authority is {}", selection);
+      }else{
+          // We try to match ACR to discovery configuration to find out upstream, 
+          DiscoveryConfiguration = Java.type("fi.csc.shibboleth.authn.conf.DiscoveryConfiguration");
+          var discoveryConfiguration = DiscoveryConfiguration.parse(custom);
+          var RelyingPartyIdLookupFunction = Java.type("net.shibboleth.profile.context.navigate.RelyingPartyIdLookupFunction");
+          var relyingPartyIdLookupFunction = new RelyingPartyIdLookupFunction();
+          rpId = relyingPartyIdLookupFunction.apply(input);
+          var discoveryFlows = discoveryConfiguration.getFlowMap().containsKey(rpId)
+            ? discoveryConfiguration.getFlowMap().get(rpId)
+            : discoveryConfiguration.getFlowMap().get("default");
+          if (requestedPrincipalContext != null){
+              for (index = 0; index < requestedPrincipalContext.getRequestedPrincipals().length; index++) {
+                  p = requestedPrincipalContext.getRequestedPrincipals()[index];
+                  logger.debug("Relying party {} asked for principal with name {}", rpId, p.getName());
+                  //Look for p.getName() in discoveryFlows
+                  flows = discoveryFlows.getAuthorityMap().keySet().iterator();
+                  while (flows.hasNext()){
+                      flow = flows.next();
+                      authorities = discoveryFlows.getAuthorityMap().get(flow).iterator();
+                      while (authorities.hasNext()){
+                          authority = authorities.next();
+                          if (p.getName().equals(authority.getAcr())) {
+                              selection = authority.toB64UrlEncoded();
+                              break;
+                          }
+                      }
+                      if (selection != null) {
+                          break;
+                      }
+                  }
+                  if (selection != null){
+                      logger.debug("User selection by ACR for Authenticating Authority is {}", selection);
+                  }else{ 
+                      logger.warn("Missing ACR mapping for requested ACR {} by relying party {}.", p.getName(), rpId);
+                  }
+              }
+          }
+      }
+      if (selection != null){
+          DiscoveryAuthenticatingAuthority = Java.type("fi.csc.shibboleth.authn.conf.DiscoveryAuthenticatingAuthority");
+          var discoveryAuthenticatingAuthority = DiscoveryAuthenticatingAuthority.parseB64UrlEncoded(selection);
+          if ("discovery".equals(discoveryAuthenticatingAuthority.getType())) {
+              // Borrowing Hinted Name to pass data to discoveryURLStrategy.
+              var dsUrl = discoveryAuthenticatingAuthority.getValue();
+              authnContext.setHintedName(dsUrl);
+              logger.debug("DiscoveryFunction storing {} as upstream discovery", dsUrl);
+          } else {
+              entityId = discoveryAuthenticatingAuthority.getValue();
+              logger.debug("DiscoveryFunction passing {} as upstream idp", entityId);
+          }
+      }
+      entityId;
+      ]]>
+    </value>
+  </constructor-arg>
+</bean>
+
+<bean id="shibboleth.authn.SAML.discoveryFunction" parent="csc.discoveryFunction"/>
+<bean id="shibboleth.authn.oidc.rp.discoveryFunction" parent="csc.discoveryFunction"/>
+
+<bean id="shibboleth.authn.discoveryURLStrategy" parent="shibboleth.ContextFunctions.Scripted" factory-method="inlineScript">
+  <constructor-arg>
+    <value>
+      <![CDATA[
+      logger = Java.type("org.slf4j.LoggerFactory").getLogger("shibboleth.authn.discoveryURLStrategy");
+      logger.debug("DiscoveryURLStrategy selecting discovery service");
+      discoveryURL = null;
+      authnContext = input.getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
+      logger.debug("User selection for Discovery Service is {}", authnContext.getHintedName());
+      if (authnContext.getHintedName() != null){
+          discoveryURL = authnContext.getHintedName();
+          logger.debug("DiscoveryURLStrategy passing {} as upstream discovery url", discoveryURL);
+      }
+      discoveryURL;
+      ]]>
+    </value>
+  </constructor-arg>
+</bean>
+
+```
+
