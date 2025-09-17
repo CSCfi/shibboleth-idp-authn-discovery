@@ -166,7 +166,7 @@ Discovery can now be set to remember user prior selection bypassing Disco view. 
 ```
 idp.discovery.storeSelection = true
 ```
-discovery will store user's selection to session and use it. If prior selection is not applicable Disco view is shown. 
+discovery will store user's selection to session and use it automatically on subsequent execution. If prior selection is not applicable Disco view is shown. 
 
 ### Version 2.1.0 and JSON configuration
 Version 2.1.0 provides alternate way to configure discovery items in a single json string and a helper to apply details of selected item in later stages. Here is an example of such string for a setup where we want to direct all requests for MFA authentication configuration to handle.
