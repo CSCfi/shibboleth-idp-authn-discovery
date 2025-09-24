@@ -56,7 +56,7 @@ THE SOFTWARE.
             p:httpServletRequestSupplier-ref="shibboleth.HttpServletRequestSupplier"
             p:authorityProperties="%{idp.discovery.authority.properties:}"
             p:authorities="%{idp.discovery.authorities:}"
-            p:storeSelection="%{idp.discovery.autoSelectSingleItem:false}" />
+            p:autoSelectSingleItem="%{idp.discovery.autoSelectSingleItem:false}" />
 
     <bean id="shibboleth.authn.Discovery.AuthnFlowFieldName" class="java.lang.String" c:_0="j_authnflow" />
     <bean id="shibboleth.authn.Discovery.SelectedAuthorityFieldName" class="java.lang.String" c:_0="j_authnauthority" />
