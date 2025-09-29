@@ -55,7 +55,9 @@ THE SOFTWARE.
             class="fi.csc.shibboleth.authn.impl.PopulateDiscoveryContext"
             p:httpServletRequestSupplier-ref="shibboleth.HttpServletRequestSupplier"
             p:authorityProperties="%{idp.discovery.authority.properties:}"
-            p:authorities="%{idp.discovery.authorities:}" />
+            p:authorities="%{idp.discovery.authorities:}"
+            p:autoSelectSingleItem="%{idp.discovery.autoSelectSingleItem:false}"
+            p:ignoredFlows="%{idp.discovery.ignoredFlows:authn/Disco}" />
 
     <bean id="shibboleth.authn.Discovery.AuthnFlowFieldName" class="java.lang.String" c:_0="j_authnflow" />
     <bean id="shibboleth.authn.Discovery.SelectedAuthorityFieldName" class="java.lang.String" c:_0="j_authnauthority" />

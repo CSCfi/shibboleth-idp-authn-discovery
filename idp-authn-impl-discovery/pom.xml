@@ -25,7 +25,7 @@ THE SOFTWARE.
   <parent>
     <artifactId>idp-authn-discovery</artifactId>
     <groupId>fi.csc.shibboleth</groupId>
-    <version>2.1.0</version>
+    <version>2.2.0</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>idp-authn-impl-discovery</artifactId>

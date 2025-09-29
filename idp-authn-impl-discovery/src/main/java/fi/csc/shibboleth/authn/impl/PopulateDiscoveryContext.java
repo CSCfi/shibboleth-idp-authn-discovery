@@ -93,6 +93,12 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
     private String relyingPartyId;
 
     /**
+     * Whether to automatically select item bypassing discovery view if there is
+     * only one to select from.
+     */
+    private boolean autoSelectSingleItem;
+
+    /**
      * Strategy used to locate the {@link RelyingPartyContext} associated with a
      * given {@link ProfileRequestContext}.
      */
@@ -106,6 +112,18 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
         ignoredFlows = Collections.emptyList();
         authorityProperties = new Properties();
         relyingPartyContextLookupStrategy = new ChildContextLookup<>(RelyingPartyContext.class);
+    }
+
+    /**
+     * Set whether to automatically select item bypassing discovery view if there is
+     * only one to select from.
+     * 
+     * @param store hether to automatically select item bypassing discovery view if
+     *              there is only one to select from
+     */
+    public void setAutoSelectSingleItem(final boolean autoSelect) {
+        checkSetterPreconditions();
+        autoSelectSingleItem = autoSelect;
     }
 
     /** {@inheritDoc} */
@@ -266,6 +284,15 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
             }
         }
 
+        // If there is only one item to select there is no point to show discovery view.
+        if (autoSelectSingleItem && discoveryContext.getFlowsWithAuthorities().size() == 1) {
+            flow = discoveryContext.getFlowsWithAuthorities().get(0).getFirst();
+            authority = discoveryContext.getFlowsWithAuthorities().get(0).getSecond();
+            log.debug("{} Only one item to select {} {}, bypassing discovery view", getLogPrefix(), flow, authority);
+            signalNextFlow(profileRequestContext, authenticationContext);
+            return;
+        }
+
         // Look for prior selection
         flow = (String) getHttpServletRequest().getSession().getAttribute(FLOW_ATTRIBUTE);
         authority = (String) getHttpServletRequest().getSession().getAttribute(AUTHORITY_ATTRIBUTE);
@@ -273,10 +300,13 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
         if (flow == null || flow.isBlank()) {
             return;
         }
+
+        // Prior selection is used only if it matches what is currently available.
         if (!validateUserSelection()) {
             log.debug("{} Prior selection {} {} is not available", getLogPrefix(), flow, authority);
             return;
         }
+
         log.info("{} User has prior selection {} {}", getLogPrefix(), flow, authority);
         signalNextFlow(profileRequestContext, authenticationContext);
     }
