@@ -514,6 +514,18 @@ The new helper classes are in these examples used to parse upstream Authenticati
 </bean>
 
 ```
+## Version 2.2.0 Features
+### Version 2.2.0 and automatically select single items
+In the case there would be only one item for Discovery to display the selection can be made automatic by setting 
+```
+idp.discovery.autoSelectSingleItem = true
+```
+### Version 2.2.0 and ignoring flows
+Discovery can be instructed to ignore specific flows. The list of ignored flows can be set by comma limited list that has default value
+```
+idp.discovery.ignoredFlows = authn/Disco
+```
+
 
 # More helpers
 Following library offers some helpers we use in our proxies. New keys to upstream acr translation, managing multiple upstream OIDC credentials etc.
