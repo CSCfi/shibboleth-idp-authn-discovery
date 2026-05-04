@@ -172,56 +172,56 @@ discovery will store user's selection to session and use it automatically on sub
 Version 2.1.0 provides alternate way to configure discovery items in a single json string and a helper to apply details of selected item in later stages. Here is an example of such string for a setup where we want to direct all requests for MFA authentication configuration to handle.
 
 ```
-idp.discovery.authorities = {
-  "default": {
-    "authn/MFA": [
-      {
-        "aaType": "discovery",
-        "acr": "https://example.com/LoginMethodOne",
-        "aaValue": "https://wayf.com/WAYF",
-        "name": "MethodOne"
-      },
-      {
-        "aaType": "discovery",
-        "acr": "https://example.com/LoginMethodOneMFA",
-        "aaValue": "https://wayf.com/WAYF",
-        "hidden": true
-      },
-      {
-        "aaType": "entity",
-        "acr": "https://example.com/LoginMethodTwo",
-        "aaValue": "https://idp.com/idp"
-      },
-      {
-        "aaType": "issuer",
-        "acr": "https://example.com/LoginMethodThree",
-        "aaValue": "https://issuer.com/issuer"
-      },
-      {
-        "acr": "https://example.com/LoginLocalPassword"
-      },
-      {
-        "acr": "https://example.com/LoginLocalPasswordMFA",
-        "hidden": true
-      },
-      {
-        "acr": "https://example.com/LoginCandourID",
-        "flow": "authn/candourid"
-      }
-    ]
-  },
-  "https://rp.with.specific.needs.com": {
-    "authn/MFA": [
-      {
-        "aaType": "discovery",
-        "acr": "https://example.com/LoginMethodOne",
-        "aaValue": "https://wayf.com/WAYF"
-      },
-      {
-        "acr": "https://example.com/LoginLocalPassword"
-      }
-    ]
-  }
+idp.discovery.authorities = { \
+  "default": { \
+    "authn/MFA": [ \
+      { \
+        "aaType": "discovery", \
+        "acr": "https://example.com/LoginMethodOne", \
+        "aaValue": "https://wayf.com/WAYF", \
+        "name": "MethodOne" \
+      }, \
+      { \
+        "aaType": "discovery", \
+        "acr": "https://example.com/LoginMethodOneMFA", \
+        "aaValue": "https://wayf.com/WAYF", \
+        "hidden": true \
+      }, \
+      { \
+        "aaType": "entity", \
+        "acr": "https://example.com/LoginMethodTwo", \
+        "aaValue": "https://idp.com/idp" \
+      }, \
+      { \
+        "aaType": "issuer", \
+        "acr": "https://example.com/LoginMethodThree", \
+        "aaValue": "https://issuer.com/issuer" \
+      }, \
+      { \
+        "acr": "https://example.com/LoginLocalPassword" \
+      }, \
+      { \
+        "acr": "https://example.com/LoginLocalPasswordMFA", \
+        "hidden": true \
+      }, \
+      { \
+        "acr": "https://example.com/LoginCandourID", \
+        "flow": "authn/candourid" \
+      } \
+    ] \
+  }, \
+  "https://rp.with.specific.needs.com": { \
+    "authn/MFA": [ \
+      { \
+        "aaType": "discovery", \
+        "acr": "https://example.com/LoginMethodOne", \
+        "aaValue": "https://wayf.com/WAYF" \
+      }, \
+      { \
+        "acr": "https://example.com/LoginLocalPassword" \
+      } \
+    ] \
+  } \
 }
 ```
 Let's go item by by what we have configured here. Each of the JSON Objects in the "authn/MFA" array represent a Authenticating Authority information to be shown in Discovery for user to select. Notice that most of the fields have meaning only because scripts running in later phases apply the information and act accordingly. The fields of the object are
@@ -239,12 +239,12 @@ Let's go item by by what we have configured here. Each of the JSON Objects in th
 *   hidden
     * Optional boolean. If set to true, item is not shown in Discovery. Information can still be used by scripts to match requested acr values to upstream providers.   
 ```
-      {
-        "aaType": "discovery",
-        "acr": "https://example.com/LoginMethodOne",
-        "aaValue": "https://wayf.com/WAYF",
-        "name": "MethodOne"
-      }
+{ \
+  "aaType": "discovery", \
+  "acr": "https://example.com/LoginMethodOne", \
+  "aaValue": "https://wayf.com/WAYF", \
+  "name": "MethodOne" \
+}
 ``` 
 This will appear to disco as one selectable item. Here is now a example discovery.vm that uses this new structure. Notice the use of helper DiscoveryAuthenticatingAuthority to parse the Authenticating Authority information and resolve the name to show correct image and helper texts. Please note also the example template most likely does not work as is. 
 
