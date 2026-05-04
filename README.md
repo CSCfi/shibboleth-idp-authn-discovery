@@ -68,6 +68,8 @@ Depending on your IdP configuration the previous may be enough. If that is the c
 ### Managing flows available for Relying Party
 Discovery view will show all available authentication flows for user to choose from. If you need to limit the flows shown for instance per RP or request that can be done by whatever means Shibboleth offers. Following example would list only 'SAML' in Discovery options for the group of SPs.
 
+> ⚠️ **Deprecated:** `setAuthenticationFlows` is deprecated in Shibboleth 5.2.0.
+
 ```
 <util:list id="shibboleth.RelyingPartyOverrides">
     <!-- The relying parties that we allow to use Only Disco and SAML authentication. -->
