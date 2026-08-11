@@ -44,7 +44,7 @@ THE SOFTWARE.
             <evaluate expression="authenticationContext.getSubcontext(T(net.shibboleth.idp.authn.context.AuthenticationErrorContext))" result="viewScope.authenticationErrorContext" />
             <evaluate expression="authenticationContext.getSubcontext(T(net.shibboleth.idp.authn.context.AuthenticationWarningContext))" result="viewScope.authenticationWarningContext" />
             <evaluate expression="authenticationContext.getSubcontext(T(fi.csc.shibboleth.authn.AuthenticationDiscoveryContext))" result="viewScope.authenticationDiscoveryContext" />
-            <evaluate expression="T(net.shibboleth.utilities.java.support.codec.HTMLEncoder)" result="viewScope.encoder" />
+            <evaluate expression="T(net.shibboleth.shared.codec.HTMLEncoder)" result="viewScope.encoder" />
             <evaluate expression="flowRequestContext.getExternalContext().getNativeRequest()" result="viewScope.request" />
             <evaluate expression="flowRequestContext.getExternalContext().getNativeResponse()" result="viewScope.response" />
             <evaluate expression="flowRequestContext.getActiveFlow().getApplicationContext().containsBean('shibboleth.CustomViewContext') ? flowRequestContext.getActiveFlow().getApplicationContext().getBean('shibboleth.CustomViewContext') : null" result="viewScope.custom" />
