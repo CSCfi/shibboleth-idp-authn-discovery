@@ -159,6 +159,37 @@ public class PopulateDiscoveryContextTest {
     }
 
     @Test
+    public void testDiscoveryPropertiesWithEmptyTokens() throws Exception {
+        action.setAuthorityProperties("./src/test/resources/discovery-empty-tokens.properties");
+        action.initialize();
+        final Event event = action.execute(src);
+        ActionTestingSupport.assertProceedEvent(event);
+        AuthenticationDiscoveryContext discoContext = authenticationContext
+                .getSubcontext(AuthenticationDiscoveryContext.class);
+        Assert.assertNotNull(discoContext);
+        // authn/test1 has "authority1, , authority2" → 2 valid tokens (empty middle skipped)
+        // authn/test2 has no properties entry → single null-authority fallback
+        // authn/test3 has "authority3,,authority4" → 2 valid tokens
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().size(), 5);
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(0).getFirst(), "authn/test1");
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(0).getSecond(), "authority1");
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(1).getFirst(), "authn/test1");
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(1).getSecond(), "authority2");
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(2).getFirst(), "authn/test2");
+        Assert.assertNull(discoContext.getFlowsWithAuthorities().get(2).getSecond());
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(3).getFirst(), "authn/test3");
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(3).getSecond(), "authority3");
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(4).getFirst(), "authn/test3");
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(4).getSecond(), "authority4");
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void testAuthoritiesMissingDefaultThrows() {
+        String noDefault = "{ \"someRp\": { \"authn/X\": [ { \"acr\": \"urn:x\" } ] } }";
+        action.setAuthorities(noDefault);
+    }
+
+    @Test
     public void testJsonOverProperties() throws Exception {
         action.setAuthorityProperties("./src/test/resources/discovery.properties");
         action.setAuthorities(configuration);
