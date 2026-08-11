@@ -19,14 +19,22 @@
               #if ($mapEntry.first != $discoFlowId)
                 #if ($mapEntry.second)
                   #set ($messageKey = $mapEntry.first + "." + $mapEntry.second + ".message")
-                  #set ($link = $flowExecutionUrl + "&j_authnflow=" + $mapEntry.first + "&j_authnauthority="+ $mapEntry.second + "&_eventId_proceed=_eventId_proceed")
                   #set ($defaultMessage = $mapEntry.first + "." + $mapEntry.second)
                 #else
                   #set ($messageKey = $mapEntry.first + ".message")
-                  #set ($link = $flowExecutionUrl + "&j_authnflow=" + $mapEntry.first + "&_eventId_proceed=_eventId_proceed")
                   #set ($defaultMessage = $mapEntry.first)
                 #end
-                <p><a href="$link#if($csrfToken)&${csrfToken.parameterName}=${csrfToken.token}#{else}#end">#springMessageText($messageKey, $defaultMessage)</a></p>
+                <form method="post" action="$flowExecutionUrl">
+                  <input type="hidden" name="j_authnflow" value="$encoder.encodeForHTMLAttribute($mapEntry.first)"/>
+                  #if ($mapEntry.second)
+                    <input type="hidden" name="j_authnauthority" value="$encoder.encodeForHTMLAttribute($mapEntry.second)"/>
+                  #end
+                  <input type="hidden" name="_eventId_proceed" value="_eventId_proceed"/>
+                  #if($csrfToken)
+                    <input type="hidden" name="${csrfToken.parameterName}" value="${csrfToken.token}"/>
+                  #end
+                  <button type="submit" class="c-login-button">#springMessageText($messageKey, $encoder.encodeForHTML($defaultMessage))</button>
+                </form>
               #end
             #end
           </div>
