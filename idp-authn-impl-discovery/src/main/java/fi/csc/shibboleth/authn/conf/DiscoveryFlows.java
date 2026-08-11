@@ -84,32 +84,38 @@ public class DiscoveryFlows {
     
     /**
      * Parses DiscoveryFlows object from JSON string.
-     * 
+     *
      * @param flowsAndAuthorities DiscoveryFlows object as JSON string
      * @return DiscoveryFlows instance
-     * @throws Exception thrown if something unexpected occurs
+     * @throws IllegalArgumentException if the input is not a valid JSON encoding of
+     *                                  a DiscoveryFlows object
      */
     @Nonnull
-    public static DiscoveryFlows parse(String flowsAndAuthorities) throws Exception {
-        return parse(new ObjectMapper().readValue(flowsAndAuthorities, new TypeReference<Map<String, Object>>() {
-        }));
+    public static DiscoveryFlows parse(String flowsAndAuthorities) {
+        try {
+            return parse(new ObjectMapper().readValue(flowsAndAuthorities, new TypeReference<Map<String, Object>>() {
+            }));
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Invalid discovery flows JSON: Parsing failed", e);
+        }
     }
 
     /**
      * Parses DiscoveryFlows object from map.
-     * 
+     *
      * @param object Object that is expected to be type Map<?, ?> representing
      *               DiscoveryFlows object.
      * @return DiscoveryFlows instance
-     * @throws Exception
+     * @throws IllegalArgumentException if the object is not a valid representation
+     *                                  of a DiscoveryFlows
      */
     @Nonnull
-    public static DiscoveryFlows parse(Object object) throws Exception {
+    public static DiscoveryFlows parse(Object object) {
         if (object instanceof Map<?, ?> authenticatingAuthoritiesPerFlow) {
             Map<String, List<DiscoveryAuthenticatingAuthority>> path = new HashMap<String, List<DiscoveryAuthenticatingAuthority>>();
             for (Entry<?, ?> entry : authenticatingAuthoritiesPerFlow.entrySet()) {
                 if (!(entry.getKey() instanceof String)) {
-                    throw new Exception("Invalid key: Parsing failed");
+                    throw new IllegalArgumentException("Invalid key: Parsing failed");
                 }
                 List<DiscoveryAuthenticatingAuthority> discoveryAuthenticatingAuthorities = new ArrayList<DiscoveryAuthenticatingAuthority>();
                 if ((entry.getValue() instanceof List<?> authorities)) {
@@ -118,12 +124,12 @@ public class DiscoveryFlows {
                     }
 
                 } else {
-                    throw new Exception("Invalid authority information: Parsing failed");
+                    throw new IllegalArgumentException("Invalid authority information: Parsing failed");
                 }
                 path.put((String) entry.getKey(), discoveryAuthenticatingAuthorities);
             }
             return new DiscoveryFlows(path);
         }
-        throw new Exception("Invalid flows field: Parsing failed");
+        throw new IllegalArgumentException("Invalid flows field: Parsing failed");
     }
 }
