@@ -51,6 +51,9 @@ import net.shibboleth.shared.annotation.constraint.NotEmpty;
  */
 public class DiscoveryAuthenticatingAuthority {
 
+    /** JSON mapper. */
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
     /** Key of acr value. */
     public final static String ACR_KEY = "acr";
 
@@ -182,7 +185,7 @@ public class DiscoveryAuthenticatingAuthority {
     @Nonnull
     @NotEmpty
     public String toJSON() throws JsonProcessingException {
-        return new ObjectMapper().writeValueAsString(this);
+        return objectMapper.writeValueAsString(this);
     }
 
     /**
@@ -225,7 +228,7 @@ public class DiscoveryAuthenticatingAuthority {
     @Nonnull
     public static DiscoveryAuthenticatingAuthority parse(String discoveryAuthenticatingAuthority) {
         try {
-            return parse(new ObjectMapper().readValue(discoveryAuthenticatingAuthority,
+            return parse(objectMapper.readValue(discoveryAuthenticatingAuthority,
                     new TypeReference<Map<String, Object>>() {
                     }));
         } catch (JsonProcessingException e) {

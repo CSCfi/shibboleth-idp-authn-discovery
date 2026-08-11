@@ -36,6 +36,9 @@ import net.shibboleth.shared.annotation.constraint.NotEmpty;
 
 public class DiscoveryConfiguration {
 
+    /** JSON mapper. */
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
     /** Flow information keyed by relying party. */
     @Nonnull
     @NotEmpty
@@ -76,7 +79,7 @@ public class DiscoveryConfiguration {
     public static DiscoveryConfiguration parse(String relyingPartiesAndFlows) {
         try {
             return parse(
-                    new ObjectMapper().readValue(relyingPartiesAndFlows, new TypeReference<Map<String, Object>>() {
+                    objectMapper.readValue(relyingPartiesAndFlows, new TypeReference<Map<String, Object>>() {
                     }));
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Invalid discovery configuration JSON: Parsing failed", e);

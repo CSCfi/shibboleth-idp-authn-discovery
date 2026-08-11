@@ -42,6 +42,9 @@ import net.shibboleth.shared.annotation.constraint.NotEmpty;
  */
 public class DiscoveryFlows {
 
+    /** JSON mapper. */
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
     /** Authenticating authority information keyed by flows. */
     @Nonnull
     @NotEmpty
@@ -78,7 +81,7 @@ public class DiscoveryFlows {
     @Nonnull
     @NotEmpty
     public String toJSON() throws JsonProcessingException {
-        return new ObjectMapper().writeValueAsString(this.flowsAndAuthorities);
+        return objectMapper.writeValueAsString(this.flowsAndAuthorities);
     }
 
     
@@ -93,7 +96,7 @@ public class DiscoveryFlows {
     @Nonnull
     public static DiscoveryFlows parse(String flowsAndAuthorities) {
         try {
-            return parse(new ObjectMapper().readValue(flowsAndAuthorities, new TypeReference<Map<String, Object>>() {
+            return parse(objectMapper.readValue(flowsAndAuthorities, new TypeReference<Map<String, Object>>() {
             }));
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Invalid discovery flows JSON: Parsing failed", e);
