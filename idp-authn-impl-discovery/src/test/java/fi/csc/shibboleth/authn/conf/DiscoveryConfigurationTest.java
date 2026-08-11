@@ -104,4 +104,21 @@ public class DiscoveryConfigurationTest {
                 .get("authn/MFA").listIterator().next().getAcr(), "https://dev-user-auth.csc.fi/LoginHakaTest");
     }
 
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void testMissingDefaultThrows() {
+        String noDefault = "{\n"
+                + "  \"someRp\": {\n"
+                + "    \"authn/X\": [\n"
+                + "      { \"acr\": \"urn:x\" }\n"
+                + "    ]\n"
+                + "  }\n"
+                + "}";
+        DiscoveryConfiguration.parse(noDefault);
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void testMalformedJsonThrows() {
+        DiscoveryConfiguration.parse("{not json");
+    }
+
 }
