@@ -23,6 +23,7 @@
 
 package fi.csc.shibboleth.authn.conf;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
 
@@ -191,51 +192,64 @@ public class DiscoveryAuthenticatingAuthority {
      * @throws JsonProcessingException thrown if something unexpected occurs.
      */
     public String toB64UrlEncoded() throws JsonProcessingException {
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(toJSON().getBytes());
+        return Base64.getUrlEncoder().withoutPadding()
+                .encodeToString(toJSON().getBytes(StandardCharsets.UTF_8));
     }
 
     /**
      * Parses DiscoveryAuthenticatingAuthority object from B64 url encoded JSON
      * string.
-     * 
+     *
      * @param discoveryAuthenticatingAuthority DiscoveryAuthenticatingAuthority as
      *                                         B64 url encoded JSON string
      * @return DiscoveryAuthenticatingAuthority instance
-     * @throws Exception thrown if something unexpected occurs
+     * @throws IllegalArgumentException if the input is not a valid encoding of a
+     *                                  DiscoveryAuthenticatingAuthority object
      */
     @Nonnull
-    public static DiscoveryAuthenticatingAuthority parseB64UrlEncoded(String discoveryAuthenticatingAuthority)
-            throws Exception {
-        return parse(new String(Base64.getUrlDecoder().decode(discoveryAuthenticatingAuthority.getBytes())));
+    public static DiscoveryAuthenticatingAuthority parseB64UrlEncoded(String discoveryAuthenticatingAuthority) {
+        return parse(new String(
+                Base64.getUrlDecoder().decode(discoveryAuthenticatingAuthority.getBytes(StandardCharsets.UTF_8)),
+                StandardCharsets.UTF_8));
     }
 
     /**
      * Parses DiscoveryAuthenticatingAuthority object from JSON string.
-     * 
+     *
      * @param discoveryAuthenticatingAuthority DiscoveryAuthenticatingAuthority as
      *                                         JSON string
      * @return DiscoveryAuthenticatingAuthority instance
-     * @throws Exception thrown if something unexpected occurs
+     * @throws IllegalArgumentException if the input is not a valid JSON encoding of
+     *                                  a DiscoveryAuthenticatingAuthority object
      */
     @Nonnull
-    public static DiscoveryAuthenticatingAuthority parse(String discoveryAuthenticatingAuthority) throws Exception {
-        return parse(new ObjectMapper().readValue(discoveryAuthenticatingAuthority,
-                new TypeReference<Map<String, Object>>() {
-                }));
+    public static DiscoveryAuthenticatingAuthority parse(String discoveryAuthenticatingAuthority) {
+        try {
+            return parse(new ObjectMapper().readValue(discoveryAuthenticatingAuthority,
+                    new TypeReference<Map<String, Object>>() {
+                    }));
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Invalid discovery aa JSON: Parsing failed", e);
+        }
     }
 
     /**
      * Parses DiscoveryAuthenticatingAuthority object from map.
-     * 
+     *
      * @param object Object that is expected to be type Map<?, ?> representing
      *               DiscoveryAuthenticatingAuthority object.
      * @return DiscoveryAuthenticatingAuthority instance
-     * @throws Exception
+     * @throws IllegalArgumentException if the object is not a valid representation
+     *                                  of a DiscoveryAuthenticatingAuthority
      */
     @Nonnull
-    public static DiscoveryAuthenticatingAuthority parse(Object object) throws Exception {
+    public static DiscoveryAuthenticatingAuthority parse(Object object) {
         if (object instanceof Map<?, ?> authenticatingAuthority) {
             String acr = (authenticatingAuthority.get(ACR_KEY) instanceof String item) ? item : null;
+            if (acr == null) {
+                throw new IllegalArgumentException(
+                        "Mandatory \"" + ACR_KEY + "\" is missing: Parsing failed");
+            }
             String type = (authenticatingAuthority.get(AA_TYPE_KEY) instanceof String item) ? item : null;
             String value = (authenticatingAuthority.get(AA_VALUE_KEY) instanceof String item) ? item : null;
             String flow = (authenticatingAuthority.get(FLOW_KEY) instanceof String item) ? item : null;
@@ -244,7 +258,7 @@ public class DiscoveryAuthenticatingAuthority {
                     : false;
             return new DiscoveryAuthenticatingAuthority(acr, type, value, flow, name, hidden);
         }
-        throw new Exception("Invalid discovery aa object: Parsing failed");
+        throw new IllegalArgumentException("Invalid discovery aa object: Parsing failed");
     }
 
 }
