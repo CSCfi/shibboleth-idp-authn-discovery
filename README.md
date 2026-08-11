@@ -5,7 +5,6 @@
 > The documentation is just some notes to a reader assumed to be familiar with Shibboleth and just wants to have a go with this module. 
 
 [![License](http://img.shields.io/:license-mit-blue.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://travis-ci.org/CSCfi/shibboleth-idp-authn-discovery.svg?branch=master)](https://travis-ci.org/CSCfi/shibboleth-idp-authn-discovery)
 
 ## Overview
 
@@ -28,7 +27,7 @@ mvn package
 ## Deployment
 
 > **Note**
-> Release [2.1.0](https://github.com/CSCfi/shibboleth-idp-authn-discovery/releases/tag/2.1.0) is for Shib Idp v5.
+> Latest release is for Shib Idp v5.
 > Release [1.0.0-rc2](https://github.com/CSCfi/shibboleth-idp-authn-discovery/releases/tag/1.0.0-rc2) is for Shib Idp v4.
 
 Either compile the module yourself or use assets from releases. The module deployment is done by unpacking the archive to Shibboleth directory and and rebuilding the WAR file:
@@ -226,6 +225,8 @@ idp.discovery.authorities = { \
   } \
 }
 ```
+The top-level `"default"` key is required. Other top-level keys are optional relying party ids used to override the default for that RP.
+
 Let's go item by by what we have configured here. Each of the JSON Objects in the "authn/MFA" array represent a Authenticating Authority information to be shown in Discovery for user to select. Notice that most of the fields have meaning only because scripts running in later phases apply the information and act accordingly. The fields of the object are
 
 *   acr
