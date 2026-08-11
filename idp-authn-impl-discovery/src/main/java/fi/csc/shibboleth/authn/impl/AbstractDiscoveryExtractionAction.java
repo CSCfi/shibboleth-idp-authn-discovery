@@ -34,14 +34,13 @@ import org.opensaml.profile.context.ProfileRequestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Predicates;
-
 import fi.csc.shibboleth.authn.AuthenticationDiscoveryContext;
 import net.shibboleth.idp.authn.AbstractExtractionAction;
 import net.shibboleth.idp.authn.AuthenticationResult;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
 import net.shibboleth.shared.collection.Pair;
+import net.shibboleth.shared.logic.PredicateSupport;
 
 /**
  * Abstract class for discovery actions.
@@ -115,7 +114,7 @@ public abstract class AbstractDiscoveryExtractionAction extends AbstractExtracti
             @Nonnull final AuthenticationContext authenticationContext) {
         authenticationContext.setSignaledFlowId(flow);
         final AuthenticationResult result = new AuthenticationResult(flow, new Subject());
-        result.setReuseCondition(Predicates.alwaysFalse());
+        result.setReuseCondition(PredicateSupport.alwaysFalse());
         authenticationContext.getActiveResults().put(flow, result);
         if (authority != null && !authority.isEmpty()) {
             authenticationContext.setAuthenticatingAuthority(authority);
