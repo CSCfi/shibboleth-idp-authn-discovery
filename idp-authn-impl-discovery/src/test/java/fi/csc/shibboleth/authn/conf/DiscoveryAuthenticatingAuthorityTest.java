@@ -58,4 +58,29 @@ public class DiscoveryAuthenticatingAuthorityTest {
         Assert.assertEquals(discoveryAuthenticatingAuthority.getAcr(), "https://test.com/acrname");
         Assert.assertEquals(discoveryAuthenticatingAuthority.getName(), "acrname");
     }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void testMissingAcrThrows() {
+        Map<String, Object> obj = new HashMap<String, Object>();
+        obj.put(DiscoveryAuthenticatingAuthority.AA_TYPE_KEY, "entity");
+        obj.put(DiscoveryAuthenticatingAuthority.AA_VALUE_KEY, "https://idp.example.com/idp");
+        DiscoveryAuthenticatingAuthority.parse(obj);
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void testMalformedJsonThrows() {
+        DiscoveryAuthenticatingAuthority.parse("{not json");
+    }
+
+    @Test
+    public void testUtf8RoundTrip() throws Exception {
+        Map<String, Object> obj = new HashMap<String, Object>();
+        obj.put(DiscoveryAuthenticatingAuthority.ACR_KEY, "https://example.com/naïve");
+        obj.put(DiscoveryAuthenticatingAuthority.NAME_KEY, "häkä-识");
+        DiscoveryAuthenticatingAuthority original = DiscoveryAuthenticatingAuthority.parse(obj);
+        String encoded = original.toB64UrlEncoded();
+        DiscoveryAuthenticatingAuthority decoded = DiscoveryAuthenticatingAuthority.parseB64UrlEncoded(encoded);
+        Assert.assertEquals(decoded.getAcr(), "https://example.com/naïve");
+        Assert.assertEquals(decoded.getName(), "häkä-识");
+    }
 }
