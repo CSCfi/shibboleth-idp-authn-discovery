@@ -33,6 +33,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
 import net.shibboleth.shared.annotation.constraint.NotEmpty;
+import net.shibboleth.shared.component.ComponentInitializationException;
 import net.shibboleth.shared.logic.Constraint;
 
 /**
@@ -96,6 +97,15 @@ public class ExtractAuthenticationFlowDecision extends AbstractDiscoveryExtracti
     public void setStoreSelection(final boolean store) {
         checkSetterPreconditions();
         storeSelection = store;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void doInitialize() throws ComponentInitializationException {
+        super.doInitialize();
+        if (authnFlowFieldName == null || authnFlowFieldName.isEmpty()) {
+            throw new ComponentInitializationException("authnFlowFieldName cannot be null or empty");
+        }
     }
 
     /** {@inheritDoc} */

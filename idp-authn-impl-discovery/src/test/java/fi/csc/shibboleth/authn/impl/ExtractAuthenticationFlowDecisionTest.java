@@ -126,6 +126,22 @@ public class ExtractAuthenticationFlowDecisionTest {
     }
 
     /**
+     * Initialization fails when the mandatory authnFlowFieldName has not been set.
+     */
+    @Test(expectedExceptions = ComponentInitializationException.class)
+    public void testInitFailsWithoutAuthnFlowFieldName() throws Exception {
+        final ExtractAuthenticationFlowDecision a = new ExtractAuthenticationFlowDecision();
+        a.setTrim(true);
+        final MockHttpServletRequest request = new MockHttpServletRequest();
+        a.setHttpServletRequestSupplier(new NonnullSupplier<>() {
+            public HttpServletRequest get() {
+                return request;
+            }
+        });
+        a.initialize();
+    }
+
+    /**
      * Runs the action with invalid input.
      */
     @Test
