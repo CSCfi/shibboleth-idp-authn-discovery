@@ -152,6 +152,8 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
                 authorityProperties.load(stream);
             } catch (final IOException e) {
                 log.error("{} Error loading {}", getLogPrefix(), propertiesFile, e);
+                throw new IllegalArgumentException(
+                        "Failed to load idp.discovery.authority.properties file: " + propertiesFile, e);
             }
         }
     }
@@ -215,10 +217,10 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
         assert flow != null;
         String authorities = null;
         if (relyingPartyId != null) {
-            authorities = (String) authorityProperties.get(relyingPartyId + "." + flow.getId());
+            authorities = authorityProperties.getProperty(relyingPartyId + "." + flow.getId());
         }
         if (authorities == null || authorities.isEmpty()) {
-            authorities = (String) authorityProperties.get(flow.getId());
+            authorities = authorityProperties.getProperty(flow.getId());
         }
         if (authorities != null && !authorities.isEmpty()) {
             for (final String authority : authorities.split(",")) {
