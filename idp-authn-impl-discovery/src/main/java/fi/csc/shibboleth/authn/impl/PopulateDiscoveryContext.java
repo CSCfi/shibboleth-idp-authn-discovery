@@ -117,9 +117,9 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
     /**
      * Set whether to automatically select item bypassing discovery view if there is
      * only one to select from.
-     * 
-     * @param store hether to automatically select item bypassing discovery view if
-     *              there is only one to select from
+     *
+     * @param autoSelect whether to automatically select item bypassing discovery
+     *                   view if there is only one to select from
      */
     public void setAutoSelectSingleItem(final boolean autoSelect) {
         checkSetterPreconditions();
@@ -168,12 +168,12 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
      * @param authorities JSON based alternative configuration to
      *                    authorityProperties
      */
-    public void setAuthorities(String authorities) {
+    public void setAuthorities(final String authorities) {
         checkSetterPreconditions();
         if (authorities != null && !authorities.isBlank()) {
             try {
                 authorityConfiguration = DiscoveryConfiguration.parse(authorities);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 log.error("{} Failed parsing {}", getLogPrefix(), authorities, e);
                 throw new IllegalArgumentException(
                         "Failed to parse idp.discovery.authorities configuration", e);
@@ -211,9 +211,9 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
     }
 
     /**
-     * Add selectable flow to {@link DiscoveryContext} with authenticating
-     * authorities using properties file.
-     * 
+     * Add selectable flow to {@link AuthenticationDiscoveryContext} with
+     * authenticating authorities using properties file.
+     *
      * @param flow flow to be added
      */
     private void addItemsUsingProperties(@Nonnull final AuthenticationFlowDescriptor flow) {
@@ -241,27 +241,27 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
     }
 
     /**
-     * Add selectable flow to {@link DiscoveryContext} with authenticating
-     * authorities using {@link DiscoveryConfiguration}.
-     * 
+     * Add selectable flow to {@link AuthenticationDiscoveryContext} with
+     * authenticating authorities using {@link DiscoveryConfiguration}.
+     *
      * @param flow flow to be added
      */
     private void addItemsUsingDiscoveryConfiguration(@Nonnull final AuthenticationFlowDescriptor flow) {
 
         assert flow != null;
-        DiscoveryFlows rpConf = authorityConfiguration.getFlowMap().containsKey(relyingPartyId)
+        final DiscoveryFlows rpConf = authorityConfiguration.getFlowMap().containsKey(relyingPartyId)
                 ? authorityConfiguration.getFlowMap().get(relyingPartyId)
                 : authorityConfiguration.getFlowMap().get(DiscoveryConfiguration.DEFAULT_KEY);
         if (rpConf.getAuthorityMap().containsKey(flow.getId())) {
             rpConf.getAuthorityMap().get(flow.getId()).forEach(authority -> {
                 try {
                     if (!authority.isHidden()) {
-                        String authorityValue = authority.toB64UrlEncoded();
+                        final String authorityValue = authority.toB64UrlEncoded();
                         log.debug("{} Setting authority as {}", getLogPrefix(), authorityValue);
                         discoveryContext.getFlowsWithAuthorities().add(new Pair<>(flow.getId(), authorityValue));
                     }
 
-                } catch (JsonProcessingException e) {
+                } catch (final JsonProcessingException e) {
                     log.error("{} Processing exception", getLogPrefix(), e);
                 }
             });

@@ -47,15 +47,11 @@ import net.shibboleth.shared.logic.PredicateSupport;
  */
 public abstract class AbstractDiscoveryExtractionAction extends AbstractExtractionAction {
 
-    /** Class logger. */
-    @Nonnull
-    private final Logger log = LoggerFactory.getLogger(AbstractDiscoveryExtractionAction.class);
-
     /** Attribute name of selected flow. */
-    protected final static String FLOW_ATTRIBUTE = "fi.csc.shibboleth.authn.discovery.selectedFlow";
+    protected static final String FLOW_ATTRIBUTE = "fi.csc.shibboleth.authn.discovery.selectedFlow";
 
     /** Attribute name of selected authority. */
-    protected final static String AUTHORITY_ATTRIBUTE = "fi.csc.shibboleth.authn.discovery.selectedAuthority";
+    protected static final String AUTHORITY_ATTRIBUTE = "fi.csc.shibboleth.authn.discovery.selectedAuthority";
 
     /** Authentication flow selected by the user. */
     protected String flow;
@@ -65,6 +61,10 @@ public abstract class AbstractDiscoveryExtractionAction extends AbstractExtracti
 
     /** Discovery context containing valid flow / authority pairs. */
     protected AuthenticationDiscoveryContext discoveryContext;
+
+    /** Class logger. */
+    @Nonnull
+    private final Logger log = LoggerFactory.getLogger(AbstractDiscoveryExtractionAction.class);
 
     /** {@inheritDoc} */
     @Override

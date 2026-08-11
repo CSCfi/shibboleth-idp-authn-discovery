@@ -49,28 +49,30 @@ import net.shibboleth.shared.annotation.constraint.NotEmpty;
  * discovery url or entity id.
  * 
  */
-public class DiscoveryAuthenticatingAuthority {
-
-    /** JSON mapper. */
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+public final class DiscoveryAuthenticatingAuthority {
 
     /** Key of acr value. */
-    public final static String ACR_KEY = "acr";
+    public static final String ACR_KEY = "acr";
 
     /** Key of Authenticating Authority Type. */
-    public final static String AA_TYPE_KEY = "aaType";
+    public static final String AA_TYPE_KEY = "aaType";
 
     /** Key of Authenticating Authority Value. */
-    public final static String AA_VALUE_KEY = "aaValue";
+    public static final String AA_VALUE_KEY = "aaValue";
 
     /** Key of Name property. */
-    public final static String NAME_KEY = "name";
+    public static final String NAME_KEY = "name";
 
     /** Key of Hidden property. */
-    public final static String HIDDEN_KEY = "hidden";
+    public static final String HIDDEN_KEY = "hidden";
 
     /** Key of Flow name. */
-    public final static String FLOW_KEY = "flow";
+    public static final String FLOW_KEY = "flow";
+
+    // CheckStyle: ConstantName OFF
+    /** JSON mapper. */
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+    // CheckStyle: ConstantName ON
 
     /** Authenticating authority acr. */
     @Nonnull
@@ -103,13 +105,17 @@ public class DiscoveryAuthenticatingAuthority {
 
     /**
      * Constructor.
-     * 
-     * @param acr   Authenticating authority acr
-     * @param type  Authenticating authority type
-     * @param value Authenticating authority value
+     *
+     * @param acr    Authenticating authority acr
+     * @param type   Authenticating authority type
+     * @param value  Authenticating authority value
+     * @param flow   Next flow associated with this authority
+     * @param name   Human-friendly name
+     * @param hidden Whether the item is hidden from the Discovery view
      */
-    private DiscoveryAuthenticatingAuthority(@Nonnull String acr, @Nullable String type, @Nullable String value,
-            @Nullable String flow, @Nullable String name, boolean hidden) {
+    private DiscoveryAuthenticatingAuthority(@Nonnull final String acr, @Nullable final String type,
+            @Nullable final String value, @Nullable final String flow, @Nullable final String name,
+            final boolean hidden) {
         this.acr = acr;
         this.type = type;
         this.value = value;
@@ -151,6 +157,8 @@ public class DiscoveryAuthenticatingAuthority {
 
     /**
      * Whether item should be hidden from Discovery view.
+     *
+     * @return true if the item should be hidden from the Discovery view
      */
     public boolean isHidden() {
         return hidden;
@@ -210,7 +218,7 @@ public class DiscoveryAuthenticatingAuthority {
      *                                  DiscoveryAuthenticatingAuthority object
      */
     @Nonnull
-    public static DiscoveryAuthenticatingAuthority parseB64UrlEncoded(String discoveryAuthenticatingAuthority) {
+    public static DiscoveryAuthenticatingAuthority parseB64UrlEncoded(final String discoveryAuthenticatingAuthority) {
         return parse(new String(
                 Base64.getUrlDecoder().decode(discoveryAuthenticatingAuthority.getBytes(StandardCharsets.UTF_8)),
                 StandardCharsets.UTF_8));
@@ -226,12 +234,12 @@ public class DiscoveryAuthenticatingAuthority {
      *                                  a DiscoveryAuthenticatingAuthority object
      */
     @Nonnull
-    public static DiscoveryAuthenticatingAuthority parse(String discoveryAuthenticatingAuthority) {
+    public static DiscoveryAuthenticatingAuthority parse(final String discoveryAuthenticatingAuthority) {
         try {
             return parse(objectMapper.readValue(discoveryAuthenticatingAuthority,
                     new TypeReference<Map<String, Object>>() {
                     }));
-        } catch (JsonProcessingException e) {
+        } catch (final JsonProcessingException e) {
             throw new IllegalArgumentException("Invalid discovery aa JSON: Parsing failed", e);
         }
     }
@@ -246,19 +254,19 @@ public class DiscoveryAuthenticatingAuthority {
      *                                  of a DiscoveryAuthenticatingAuthority
      */
     @Nonnull
-    public static DiscoveryAuthenticatingAuthority parse(Object object) {
+    public static DiscoveryAuthenticatingAuthority parse(final Object object) {
         if (object instanceof Map<?, ?> authenticatingAuthority) {
-            String acr = (authenticatingAuthority.get(ACR_KEY) instanceof String item) ? item : null;
+            final String acr = (authenticatingAuthority.get(ACR_KEY) instanceof String item) ? item : null;
             if (acr == null) {
                 throw new IllegalArgumentException(
                         "Mandatory \"" + ACR_KEY + "\" is missing: Parsing failed");
             }
-            String type = (authenticatingAuthority.get(AA_TYPE_KEY) instanceof String item) ? item : null;
-            String value = (authenticatingAuthority.get(AA_VALUE_KEY) instanceof String item) ? item : null;
-            String flow = (authenticatingAuthority.get(FLOW_KEY) instanceof String item) ? item : null;
-            String name = (authenticatingAuthority.get(NAME_KEY) instanceof String item) ? item : null;
-            boolean hidden = (authenticatingAuthority.get(HIDDEN_KEY) instanceof Boolean item) ? item.booleanValue()
-                    : false;
+            final String type = (authenticatingAuthority.get(AA_TYPE_KEY) instanceof String item) ? item : null;
+            final String value = (authenticatingAuthority.get(AA_VALUE_KEY) instanceof String item) ? item : null;
+            final String flow = (authenticatingAuthority.get(FLOW_KEY) instanceof String item) ? item : null;
+            final String name = (authenticatingAuthority.get(NAME_KEY) instanceof String item) ? item : null;
+            final boolean hidden =
+                    (authenticatingAuthority.get(HIDDEN_KEY) instanceof Boolean item) ? item.booleanValue() : false;
             return new DiscoveryAuthenticatingAuthority(acr, type, value, flow, name, hidden);
         }
         throw new IllegalArgumentException("Invalid discovery aa object: Parsing failed");

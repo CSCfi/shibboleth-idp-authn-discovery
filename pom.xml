@@ -165,6 +165,17 @@ THE SOFTWARE.
           <artifactId>maven-project-info-reports-plugin</artifactId>
           <version>3.4.5</version>
         </plugin>
+        <plugin>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>3.6.0</version>
+          <dependencies>
+            <dependency>
+              <groupId>com.puppycrawl.tools</groupId>
+              <artifactId>checkstyle</artifactId>
+              <version>10.20.2</version>
+            </dependency>
+          </dependencies>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -184,6 +195,26 @@ THE SOFTWARE.
             <goals>
               <goal>report</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>verify-style</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <configLocation>${maven.multiModuleProjectDirectory}/checkstyle.xml</configLocation>
+              <consoleOutput>true</consoleOutput>
+              <includeTestSourceDirectory>false</includeTestSourceDirectory>
+              <failsOnError>false</failsOnError>
+              <failOnViolation>false</failOnViolation>
+            </configuration>
           </execution>
         </executions>
       </plugin>

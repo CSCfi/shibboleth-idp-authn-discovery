@@ -31,7 +31,6 @@ THE SOFTWARE.
   <artifactId>idp-authn-impl-discovery</artifactId>
   <packaging>jar</packaging>
   <properties>
-    <checkstyle.configLocation>${project.basedir}/../checkstyle.xml</checkstyle.configLocation>
     <automatic.module.name>fi.csc.authn.discovery.impl</automatic.module.name>
   </properties>
   <dependencies>

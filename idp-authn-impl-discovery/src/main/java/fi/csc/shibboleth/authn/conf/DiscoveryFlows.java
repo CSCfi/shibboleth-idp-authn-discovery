@@ -40,10 +40,12 @@ import net.shibboleth.shared.annotation.constraint.NotEmpty;
  * Class is responsible of serializing and de-serializing
  * {@link DiscoveryAuthenticatingAuthority} per flows JSON Object.
  */
-public class DiscoveryFlows {
+public final class DiscoveryFlows {
 
+    // CheckStyle: ConstantName OFF
     /** JSON mapper. */
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    // CheckStyle: ConstantName ON
 
     /** Authenticating authority information keyed by flows. */
     @Nonnull
@@ -54,7 +56,8 @@ public class DiscoveryFlows {
      * Constructor.
      * @param flowsAndAuthorities Authenticating authority information keyed by flows
      */
-    private DiscoveryFlows(@Nonnull @NotEmpty Map<String, List<DiscoveryAuthenticatingAuthority>> flowsAndAuthorities) {
+    private DiscoveryFlows(
+            @Nonnull @NotEmpty final Map<String, List<DiscoveryAuthenticatingAuthority>> flowsAndAuthorities) {
         if (flowsAndAuthorities == null || flowsAndAuthorities.isEmpty()) {
             throw new IllegalArgumentException("flowsAndAuthorities must not be null or empty");
         }
@@ -94,11 +97,11 @@ public class DiscoveryFlows {
      *                                  a DiscoveryFlows object
      */
     @Nonnull
-    public static DiscoveryFlows parse(String flowsAndAuthorities) {
+    public static DiscoveryFlows parse(final String flowsAndAuthorities) {
         try {
             return parse(objectMapper.readValue(flowsAndAuthorities, new TypeReference<Map<String, Object>>() {
             }));
-        } catch (JsonProcessingException e) {
+        } catch (final JsonProcessingException e) {
             throw new IllegalArgumentException("Invalid discovery flows JSON: Parsing failed", e);
         }
     }
@@ -113,16 +116,16 @@ public class DiscoveryFlows {
      *                                  of a DiscoveryFlows
      */
     @Nonnull
-    public static DiscoveryFlows parse(Object object) {
+    public static DiscoveryFlows parse(final Object object) {
         if (object instanceof Map<?, ?> authenticatingAuthoritiesPerFlow) {
-            Map<String, List<DiscoveryAuthenticatingAuthority>> path = new HashMap<String, List<DiscoveryAuthenticatingAuthority>>();
-            for (Entry<?, ?> entry : authenticatingAuthoritiesPerFlow.entrySet()) {
+            final Map<String, List<DiscoveryAuthenticatingAuthority>> path = new HashMap<>();
+            for (final Entry<?, ?> entry : authenticatingAuthoritiesPerFlow.entrySet()) {
                 if (!(entry.getKey() instanceof String)) {
                     throw new IllegalArgumentException("Invalid key: Parsing failed");
                 }
-                List<DiscoveryAuthenticatingAuthority> discoveryAuthenticatingAuthorities = new ArrayList<DiscoveryAuthenticatingAuthority>();
-                if ((entry.getValue() instanceof List<?> authorities)) {
-                    for (Object authority : authorities) {
+                final List<DiscoveryAuthenticatingAuthority> discoveryAuthenticatingAuthorities = new ArrayList<>();
+                if (entry.getValue() instanceof List<?> authorities) {
+                    for (final Object authority : authorities) {
                         discoveryAuthenticatingAuthorities.add(DiscoveryAuthenticatingAuthority.parse(authority));
                     }
 

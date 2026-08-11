@@ -39,7 +39,7 @@ import net.shibboleth.shared.logic.Constraint;
  * An action that extracts a selected authentication flow from an HTTP form body
  * or query string and sets it as signaled authentication flow in
  * {@link AuthenticationContext}. After validating user selection the action
- * builds {@link AuthnEventIds.RESELECT_FLOW} event.
+ * builds {@link AuthnEventIds#RESELECT_FLOW} event.
  *
  *
  * @event {@link AuthnEventIds#REQUEST_UNSUPPORTED}

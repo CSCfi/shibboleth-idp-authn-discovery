@@ -34,20 +34,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import net.shibboleth.shared.annotation.constraint.NotEmpty;
 
-public class DiscoveryConfiguration {
+/**
+ * Discovery configuration parsed from the {@code idp.discovery.authorities} JSON
+ * string. Maps relying party ids to their {@link DiscoveryFlows}; a
+ * {@link #DEFAULT_KEY} entry is mandatory and is used as the fallback for any
+ * relying party without its own entry.
+ */
+public final class DiscoveryConfiguration {
 
+    /** Required relying party key that supplies the fallback flow configuration. */
+    public static final String DEFAULT_KEY = "default";
+
+    // CheckStyle: ConstantName OFF
     /** JSON mapper. */
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    // CheckStyle: ConstantName ON
 
     /** Flow information keyed by relying party. */
     @Nonnull
     @NotEmpty
     private final Map<String, DiscoveryFlows> relyingPartiesAndFlows;
 
-    /** Required relying party key that supplies the fallback flow configuration. */
-    public static final String DEFAULT_KEY = "default";
-
-    private DiscoveryConfiguration(@Nonnull @NotEmpty Map<String, DiscoveryFlows> relyingPartiesAndFlows) {
+    private DiscoveryConfiguration(@Nonnull @NotEmpty final Map<String, DiscoveryFlows> relyingPartiesAndFlows) {
         if (relyingPartiesAndFlows == null || relyingPartiesAndFlows.isEmpty()) {
             throw new IllegalArgumentException("relyingPartiesAndFlows must not be null or empty");
         }
@@ -76,12 +84,12 @@ public class DiscoveryConfiguration {
      *                                  a DiscoveryConfiguration object
      */
     @Nonnull
-    public static DiscoveryConfiguration parse(String relyingPartiesAndFlows) {
+    public static DiscoveryConfiguration parse(final String relyingPartiesAndFlows) {
         try {
             return parse(
                     objectMapper.readValue(relyingPartiesAndFlows, new TypeReference<Map<String, Object>>() {
                     }));
-        } catch (JsonProcessingException e) {
+        } catch (final JsonProcessingException e) {
             throw new IllegalArgumentException("Invalid discovery configuration JSON: Parsing failed", e);
         }
     }
@@ -96,10 +104,10 @@ public class DiscoveryConfiguration {
      *                                  of a DiscoveryConfiguration
      */
     @Nonnull
-    public static DiscoveryConfiguration parse(Object object) {
+    public static DiscoveryConfiguration parse(final Object object) {
         if (object instanceof Map<?, ?> flowsPerRelyingParty) {
-            Map<String, DiscoveryFlows> relyingPartiesAndFlows = new HashMap<String, DiscoveryFlows>();
-            for (Entry<?, ?> entry : flowsPerRelyingParty.entrySet()) {
+            final Map<String, DiscoveryFlows> relyingPartiesAndFlows = new HashMap<>();
+            for (final Entry<?, ?> entry : flowsPerRelyingParty.entrySet()) {
                 if (!(entry.getKey() instanceof String)) {
                     throw new IllegalArgumentException("Invalid key: Parsing failed");
                 }
