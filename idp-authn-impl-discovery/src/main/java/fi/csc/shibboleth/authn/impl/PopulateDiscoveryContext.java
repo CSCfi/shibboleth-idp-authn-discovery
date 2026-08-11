@@ -154,8 +154,7 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
         } else {
             log.debug("{} Reading authority properties from {}", getLogPrefix(), propertiesFile);
             authorityProperties = new Properties();
-            try {
-                final InputStream stream = new FileInputStream(propertiesFile);
+            try (final InputStream stream = new FileInputStream(propertiesFile)) {
                 authorityProperties.load(stream);
             } catch (final IOException e) {
                 log.error("{} Error loading {}", getLogPrefix(), propertiesFile, e);
@@ -170,11 +169,14 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
      *                    authorityProperties
      */
     public void setAuthorities(String authorities) {
+        checkSetterPreconditions();
         if (authorities != null && !authorities.isBlank()) {
             try {
                 authorityConfiguration = DiscoveryConfiguration.parse(authorities);
             } catch (Exception e) {
                 log.error("{} Failed parsing {}", getLogPrefix(), authorities, e);
+                throw new IllegalArgumentException(
+                        "Failed to parse idp.discovery.authorities configuration", e);
             }
         }
     }
@@ -226,7 +228,11 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
         }
         if (authorities != null && !authorities.isEmpty()) {
             for (final String authority : authorities.split(",")) {
-                discoveryContext.getFlowsWithAuthorities().add(new Pair<>(flow.getId(), authority.trim()));
+                final String trimmed = authority.trim();
+                if (trimmed.isEmpty()) {
+                    continue;
+                }
+                discoveryContext.getFlowsWithAuthorities().add(new Pair<>(flow.getId(), trimmed));
             }
         } else {
             discoveryContext.getFlowsWithAuthorities().add(new Pair<>(flow.getId(), null));
@@ -245,7 +251,7 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
         assert flow != null;
         DiscoveryFlows rpConf = authorityConfiguration.getFlowMap().containsKey(relyingPartyId)
                 ? authorityConfiguration.getFlowMap().get(relyingPartyId)
-                : authorityConfiguration.getFlowMap().get("default");
+                : authorityConfiguration.getFlowMap().get(DiscoveryConfiguration.DEFAULT_KEY);
         if (rpConf.getAuthorityMap().containsKey(flow.getId())) {
             rpConf.getAuthorityMap().get(flow.getId()).forEach(authority -> {
                 try {
