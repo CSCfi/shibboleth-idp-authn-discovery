@@ -137,7 +137,6 @@ public class ExtractAuthenticationFlowDecision extends AbstractDiscoveryExtracti
             getHttpServletRequest().getSession().setAttribute(FLOW_ATTRIBUTE, flow);
             getHttpServletRequest().getSession().setAttribute(AUTHORITY_ATTRIBUTE, authority);
         }
-        ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.RESELECT_FLOW);
         signalNextFlow(profileRequestContext, authenticationContext);
     }
 }
