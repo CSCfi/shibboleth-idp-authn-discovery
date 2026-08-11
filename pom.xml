@@ -24,7 +24,7 @@ THE SOFTWARE.
   <modelVersion>4.0.0</modelVersion>
   <groupId>fi.csc.shibboleth</groupId>
   <artifactId>idp-authn-discovery</artifactId>
-  <version>2.2.0</version>
+  <version>2.2.1</version>
   <packaging>pom</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -32,7 +32,7 @@ THE SOFTWARE.
     <maven.compiler.target>17</maven.compiler.target>
     <shib.idp.version>5.0.0</shib.idp.version>
     <opensaml.version>5.0.0</opensaml.version>
-    <jackson.version>2.15.2</jackson.version>
+    <jackson.version>2.15.4</jackson.version>
   </properties>
   <repositories>
     <repository>
@@ -171,7 +171,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.8.10</version>
+        <version>0.8.14</version>
         <executions>
           <execution>
             <goals>
@@ -186,16 +186,6 @@ THE SOFTWARE.
             </goals>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.eluder.coveralls</groupId>
-        <artifactId>coveralls-maven-plugin</artifactId>
-        <version>4.3.0</version>
-      </plugin>
-      <plugin>
-        <groupId>com.versioneye</groupId>
-        <artifactId>versioneye-maven-plugin</artifactId>
-        <version>3.11.4</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

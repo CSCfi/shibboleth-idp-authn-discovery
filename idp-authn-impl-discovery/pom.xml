@@ -25,7 +25,7 @@ THE SOFTWARE.
   <parent>
     <artifactId>idp-authn-discovery</artifactId>
     <groupId>fi.csc.shibboleth</groupId>
-    <version>2.2.0</version>
+    <version>2.2.1</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>idp-authn-impl-discovery</artifactId>
@@ -34,13 +34,6 @@ THE SOFTWARE.
     <checkstyle.configLocation>${project.basedir}/../checkstyle.xml</checkstyle.configLocation>
     <automatic.module.name>fi.csc.authn.discovery.impl</automatic.module.name>
   </properties>
-  <licenses>
-    <license>
-      <name>MIT License</name>
-      <url>http://www.opensource.org/licenses/mit-license.php</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
   <dependencies>
     <!-- Compile Dependencies -->
     <dependency>
@@ -66,7 +59,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>${jackson.version}</version>
       <scope>provided</scope>
     </dependency>
     <!-- Test Dependencies -->
@@ -122,14 +114,6 @@ THE SOFTWARE.
             </goals>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>${maven.compiler.source}</source>
-          <target>${maven.compiler.target}</target>
-        </configuration>
       </plugin>
     </plugins>
   </build>
