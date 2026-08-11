@@ -126,12 +126,6 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
         autoSelectSingleItem = autoSelect;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    protected void doInitialize() throws ComponentInitializationException {
-        super.doInitialize();
-    }
-
     /**
      * Set the list of flow ids to be ignored from the discovey context.
      *
