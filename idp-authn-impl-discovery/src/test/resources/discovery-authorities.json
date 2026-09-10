@@ -1,0 +1,33 @@
+{
+  "default": {
+    "authn/test1": [
+      {
+        "acr": "https://dev-user-auth.csc.fi/LoginHakaTest",
+        "aaType": "discovery",
+        "aaValue": "https://testsp.funet.fi/shibboleth/WAYF"
+      },
+      {
+        "acr": "https://dev-user-auth.csc.fi/LoginHaka",
+        "aaType": "entity",
+        "aaValue": "https://idp.csc.fi/idp/shibboleth",
+        "hidden": true
+      }
+    ],
+    "authn/Password": [
+      {
+        "acr": "https://dev-user-auth.csc.fi/LoginHakaCSC",
+        "aaType": "entity",
+        "aaValue": "https://testsp.funet.fi/shibboleth/WAYF"
+      }
+    ]
+  },
+  "IK1GX427KQ": {
+    "authn/MFA": [
+      {
+        "acr": "https://dev-user-auth.csc.fi/LoginHakaTest",
+        "aaType": "discovery",
+        "aaValue": "https://testsp.funet.fi/shibboleth/WAYF"
+      }
+    ]
+  }
+}

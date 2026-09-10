@@ -23,6 +23,9 @@
 
 package fi.csc.shibboleth.authn.impl;
 
+import java.io.File;
+import java.util.List;
+
 import org.opensaml.profile.context.ProfileRequestContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.webflow.execution.Event;
@@ -33,12 +36,14 @@ import org.testng.annotations.Test;
 
 import fi.csc.shibboleth.authn.AuthenticationDiscoveryContext;
 import fi.csc.shibboleth.authn.conf.DiscoveryAuthenticatingAuthority;
+import fi.csc.shibboleth.authn.conf.FilesystemDiscoveryConfigurationResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import net.shibboleth.idp.authn.AuthenticationFlowDescriptor;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
 import net.shibboleth.idp.profile.context.navigate.WebflowRequestContextProfileRequestContextLookup;
 import net.shibboleth.idp.profile.testing.ActionTestingSupport;
 import net.shibboleth.idp.profile.testing.RequestContextBuilder;
+import net.shibboleth.profile.context.RelyingPartyContext;
 import net.shibboleth.shared.component.ComponentInitializationException;
 import net.shibboleth.shared.primitive.NonnullSupplier;
 
@@ -55,39 +60,45 @@ public class PopulateDiscoveryContextTest {
     private RequestContext src;
     private ProfileRequestContext prc;
 
+    /** The same configuration as discovery-authorities.json, for the inline property based tests. */
     private String configuration = "{\n"
             + "  \"default\": {\n"
-            + "    \"authn/test1\": [\n" 
+            + "    \"authn/test1\": [\n"
             + "      {\n"
             + "        \"acr\": \"https://dev-user-auth.csc.fi/LoginHakaTest\",\n"
             + "        \"aaType\": \"discovery\",\n"
-            + "        \"aaValue\": \"https://testsp.funet.fi/shibboleth/WAYF\"\n" 
-            + "      },\n" 
+            + "        \"aaValue\": \"https://testsp.funet.fi/shibboleth/WAYF\"\n"
+            + "      },\n"
             + "      {\n"
-            + "        \"acr\": \"https://dev-user-auth.csc.fi/LoginHaka\",\n" 
+            + "        \"acr\": \"https://dev-user-auth.csc.fi/LoginHaka\",\n"
             + "        \"aaType\": \"entity\",\n"
-            + "        \"aaValue\": \"https://idp.csc.fi/idp/shibboleth\",\n" 
-            + "        \"hidden\": true\n" 
-            + "      }\n" 
+            + "        \"aaValue\": \"https://idp.csc.fi/idp/shibboleth\",\n"
+            + "        \"hidden\": true\n"
+            + "      }\n"
             + "    ],\n"
-            + "    \"authn/Password\": [\n" 
+            + "    \"authn/Password\": [\n"
             + "      {\n"
-            + "        \"acr\": \"https://dev-user-auth.csc.fi/LoginHakaCSC\",\n" 
+            + "        \"acr\": \"https://dev-user-auth.csc.fi/LoginHakaCSC\",\n"
             + "        \"aaType\": \"entity\",\n"
-            + "        \"aaValue\": \"https://testsp.funet.fi/shibboleth/WAYF\"\n" 
-            + "      }\n" 
-            + "    ]\n" 
+            + "        \"aaValue\": \"https://testsp.funet.fi/shibboleth/WAYF\"\n"
+            + "      }\n"
+            + "    ]\n"
             + "  },\n"
-            + "  \"IK1GX427KQ\": {\n" 
-            + "    \"authn/MFA\": [\n" 
+            + "  \"IK1GX427KQ\": {\n"
+            + "    \"authn/MFA\": [\n"
             + "      {\n"
             + "        \"acr\": \"https://dev-user-auth.csc.fi/LoginHakaTest\",\n"
             + "        \"aaType\": \"discovery\",\n"
-            + "        \"aaValue\": \"https://testsp.funet.fi/shibboleth/WAYF\"\n" 
-            + "      }\n" 
-            + "    ]\n" 
+            + "        \"aaValue\": \"https://testsp.funet.fi/shibboleth/WAYF\"\n"
+            + "      }\n"
+            + "    ]\n"
             + "  }\n"
             + "}";
+
+    /** A configuration that differs from the one the resolver serves. */
+    private String otherConfiguration =
+            "{ \"default\": { \"authn/test2\": [ { \"acr\": \"urn:other\" } ] } }";
+
 
     protected void initializeMembers() throws ComponentInitializationException {
         src = new RequestContextBuilder().buildRequestContext();
@@ -183,17 +194,193 @@ public class PopulateDiscoveryContextTest {
         Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(4).getSecond(), "authority4");
     }
 
+    /**
+     * Set the relying party id seen by the action.
+     *
+     * @param relyingPartyId what to set
+     */
+    private void setRelyingPartyId(final String relyingPartyId) {
+        prc.ensureSubcontext(RelyingPartyContext.class).setRelyingPartyId(relyingPartyId);
+    }
+
+    /**
+     * Assert that the discovery context holds one authority-less entry per potential flow, which is what an
+     * unconfigured Disco produces.
+     */
+    private void assertNoAuthorities() {
+        final AuthenticationDiscoveryContext discoContext = authenticationContext
+                .getSubcontext(AuthenticationDiscoveryContext.class);
+        Assert.assertNotNull(discoContext);
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().size(), 3);
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(0).getFirst(), "authn/test1");
+        Assert.assertNull(discoContext.getFlowsWithAuthorities().get(0).getSecond());
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(1).getFirst(), "authn/test2");
+        Assert.assertNull(discoContext.getFlowsWithAuthorities().get(1).getSecond());
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(2).getFirst(), "authn/test3");
+        Assert.assertNull(discoContext.getFlowsWithAuthorities().get(2).getSecond());
+    }
+
+    /**
+     * Build an initialized filesystem resolver over the given configuration file.
+     *
+     * @param path path of the configuration file
+     * @return the initialized resolver
+     * @throws ComponentInitializationException if the initial load fails
+     */
+    private FilesystemDiscoveryConfigurationResolver buildResolver(final String path)
+            throws ComponentInitializationException {
+        final FilesystemDiscoveryConfigurationResolver resolver =
+                new FilesystemDiscoveryConfigurationResolver(new File(path));
+        resolver.setId("test");
+        resolver.initialize();
+        return resolver;
+    }
+
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testAuthoritiesMissingDefaultThrows() {
         String noDefault = "{ \"someRp\": { \"authn/X\": [ { \"acr\": \"urn:x\" } ] } }";
         action.setAuthorities(noDefault);
     }
 
+    @Test(expectedExceptions = ComponentInitializationException.class)
+    public void testResolverMissingDefaultThrows() throws Exception {
+        buildResolver("./src/test/resources/discovery-authorities-nodefault.json");
+    }
+
     @Test
-    public void testJsonOverProperties() throws Exception {
+    public void testResolverOverJsonProperty() throws Exception {
+        action.setAuthorities(otherConfiguration);
+        action.setDiscoveryConfigurationResolver(
+                buildResolver("./src/test/resources/discovery-authorities.json"));
+        action.initialize();
+        final Event event = action.execute(src);
+        ActionTestingSupport.assertProceedEvent(event);
+        AuthenticationDiscoveryContext discoContext = authenticationContext
+                .getSubcontext(AuthenticationDiscoveryContext.class);
+        Assert.assertNotNull(discoContext);
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().size(), 3);
+        // The resolver lists an authority for authn/test1, the inline property lists one for authn/test2.
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(0).getFirst(), "authn/test1");
+        Assert.assertNotNull(discoContext.getFlowsWithAuthorities().get(0).getSecond());
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(1).getFirst(), "authn/test2");
+        Assert.assertNull(discoContext.getFlowsWithAuthorities().get(1).getSecond());
+    }
+
+    @Test
+    public void testJsonPropertyOverProperties() throws Exception {
         action.setAuthorityProperties("./src/test/resources/discovery.properties");
         action.setAuthorities(configuration);
         action.initialize();
+        assertConfigurationApplied();
+    }
+
+    @Test
+    public void testResolverOverProperties() throws Exception {
+        action.setAuthorityProperties("./src/test/resources/discovery.properties");
+        action.setDiscoveryConfigurationResolver(
+                buildResolver("./src/test/resources/discovery-authorities.json"));
+        action.initialize();
+        assertConfigurationApplied();
+    }
+
+    /**
+     * The bean definition always sets all three sources, so an unconfigured deployment reaches the action with an
+     * empty properties filename, a null resolver and an empty authorities string. That must behave as if nothing
+     * had been set at all.
+     *
+     * @throws Exception if the action cannot be executed
+     */
+    @Test
+    public void testDefaultBeanWiringWithNothingConfigured() throws Exception {
+        action.setAuthorityProperties("");
+        action.setDiscoveryConfigurationResolver(null);
+        action.setAuthorities("");
+        action.initialize();
+        final Event event = action.execute(src);
+        ActionTestingSupport.assertProceedEvent(event);
+        assertNoAuthorities();
+    }
+
+    @Test
+    public void testEmptyAuthoritiesFallsBackToProperties() throws Exception {
+        action.setAuthorityProperties("./src/test/resources/discovery.properties");
+        action.setDiscoveryConfigurationResolver(null);
+        action.setAuthorities("");
+        action.initialize();
+        final Event event = action.execute(src);
+        ActionTestingSupport.assertProceedEvent(event);
+        AuthenticationDiscoveryContext discoContext = authenticationContext
+                .getSubcontext(AuthenticationDiscoveryContext.class);
+        Assert.assertNotNull(discoContext);
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().size(), 5);
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(0).getSecond(), "authority1");
+    }
+
+    @Test
+    public void testNullResolverUsesJsonProperty() throws Exception {
+        action.setDiscoveryConfigurationResolver(null);
+        action.setAuthorities(configuration);
+        action.initialize();
+        assertConfigurationApplied();
+    }
+
+    @Test
+    public void testRelyingPartyOverrideFromJsonProperty() throws Exception {
+        setRelyingPartyId("IK1GX427KQ");
+        action.setAuthorities(configuration);
+        action.initialize();
+        final Event event = action.execute(src);
+        ActionTestingSupport.assertProceedEvent(event);
+        // The RP specific block only lists authn/MFA, which is not among the potential flows.
+        assertNoAuthorities();
+    }
+
+    @Test
+    public void testRelyingPartyOverrideFromResolver() throws Exception {
+        setRelyingPartyId("IK1GX427KQ");
+        action.setDiscoveryConfigurationResolver(
+                buildResolver("./src/test/resources/discovery-authorities.json"));
+        action.initialize();
+        final Event event = action.execute(src);
+        ActionTestingSupport.assertProceedEvent(event);
+        assertNoAuthorities();
+    }
+
+    @Test
+    public void testRelyingPartyOverrideFromProperties() throws Exception {
+        setRelyingPartyId("IK1GX427KQ");
+        action.setAuthorityProperties("./src/test/resources/discovery-rp.properties");
+        action.initialize();
+        final Event event = action.execute(src);
+        ActionTestingSupport.assertProceedEvent(event);
+        AuthenticationDiscoveryContext discoContext = authenticationContext
+                .getSubcontext(AuthenticationDiscoveryContext.class);
+        Assert.assertNotNull(discoContext);
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().size(), 3);
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(0).getFirst(), "authn/test1");
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(0).getSecond(), "rpauthority1");
+    }
+
+    @Test
+    public void testIgnoredFlowsAreNotOffered() throws Exception {
+        action.setIgnoredFlows(List.of("test2"));
+        action.initialize();
+        final Event event = action.execute(src);
+        ActionTestingSupport.assertProceedEvent(event);
+        AuthenticationDiscoveryContext discoContext = authenticationContext
+                .getSubcontext(AuthenticationDiscoveryContext.class);
+        Assert.assertNotNull(discoContext);
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().size(), 2);
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(0).getFirst(), "authn/test1");
+        Assert.assertEquals(discoContext.getFlowsWithAuthorities().get(1).getFirst(), "authn/test3");
+    }
+
+    /**
+     * Assert that the discovery context reflects the JSON configuration rather than the authority properties.
+     *
+     * @throws Exception if the action cannot be executed
+     */
+    private void assertConfigurationApplied() throws Exception {
         final Event event = action.execute(src);
         ActionTestingSupport.assertProceedEvent(event);
         AuthenticationDiscoveryContext discoContext = authenticationContext

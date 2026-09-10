@@ -45,6 +45,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import fi.csc.shibboleth.authn.AuthenticationDiscoveryContext;
 import fi.csc.shibboleth.authn.conf.DiscoveryConfiguration;
+import fi.csc.shibboleth.authn.conf.DiscoveryConfigurationResolver;
 import fi.csc.shibboleth.authn.conf.DiscoveryFlows;
 import net.shibboleth.idp.authn.AuthenticationFlowDescriptor;
 import net.shibboleth.idp.authn.AuthnEventIds;
@@ -52,7 +53,6 @@ import net.shibboleth.idp.authn.context.AuthenticationContext;
 import net.shibboleth.idp.profile.IdPEventIds;
 import net.shibboleth.profile.context.RelyingPartyContext;
 import net.shibboleth.shared.collection.Pair;
-import net.shibboleth.shared.component.ComponentInitializationException;
 import net.shibboleth.shared.logic.Constraint;
 
 /**
@@ -84,6 +84,13 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
     /** Properties having list of authenticating authorities per flow. */
     @Nullable
     private Properties authorityProperties;
+
+    /**
+     * Resolver supplying the JSON based alternative configuration to
+     * authorityProperties.
+     */
+    @Nullable
+    private DiscoveryConfigurationResolver discoveryConfigurationResolver;
 
     /** JSON initialized alternative configuration to authorityProperties. */
     @Nullable
@@ -159,7 +166,22 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
     }
 
     /**
-     * Set JSON based alternative configuration to authorityProperties.
+     * Set the resolver supplying the JSON based alternative configuration to
+     * authorityProperties. When set, the resolved {@link DiscoveryConfiguration} is
+     * used in preference to both the inline JSON configuration and the authority
+     * properties.
+     * 
+     * @param resolver Resolver supplying the JSON based alternative configuration
+     *                 to authorityProperties
+     */
+    public void setDiscoveryConfigurationResolver(@Nullable final DiscoveryConfigurationResolver resolver) {
+        checkSetterPreconditions();
+        discoveryConfigurationResolver = resolver;
+    }
+
+    /**
+     * Set JSON based alternative configuration to authorityProperties. Used only
+     * when no {@link DiscoveryConfigurationResolver} has been set.
      * 
      * @param authorities JSON based alternative configuration to
      *                    authorityProperties
@@ -171,8 +193,7 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
                 authorityConfiguration = DiscoveryConfiguration.parse(authorities);
             } catch (final Exception e) {
                 log.error("{} Failed parsing {}", getLogPrefix(), authorities, e);
-                throw new IllegalArgumentException(
-                        "Failed to parse idp.discovery.authorities configuration", e);
+                throw new IllegalArgumentException("Failed to parse idp.discovery.authorities configuration", e);
             }
         }
     }
@@ -240,14 +261,16 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
      * Add selectable flow to {@link AuthenticationDiscoveryContext} with
      * authenticating authorities using {@link DiscoveryConfiguration}.
      *
-     * @param flow flow to be added
+     * @param flow          flow to be added
+     * @param configuration the configuration to read the authorities from
      */
-    private void addItemsUsingDiscoveryConfiguration(@Nonnull final AuthenticationFlowDescriptor flow) {
+    private void addItemsUsingDiscoveryConfiguration(@Nonnull final AuthenticationFlowDescriptor flow,
+            @Nonnull final DiscoveryConfiguration configuration) {
 
         assert flow != null;
-        final DiscoveryFlows rpConf = authorityConfiguration.getFlowMap().containsKey(relyingPartyId)
-                ? authorityConfiguration.getFlowMap().get(relyingPartyId)
-                : authorityConfiguration.getFlowMap().get(DiscoveryConfiguration.DEFAULT_KEY);
+        final DiscoveryFlows rpConf = configuration.getFlowMap().containsKey(relyingPartyId)
+                ? configuration.getFlowMap().get(relyingPartyId)
+                : configuration.getFlowMap().get(DiscoveryConfiguration.DEFAULT_KEY);
         if (rpConf.getAuthorityMap().containsKey(flow.getId())) {
             rpConf.getAuthorityMap().get(flow.getId()).forEach(authority -> {
                 try {
@@ -273,14 +296,17 @@ public class PopulateDiscoveryContext extends AbstractDiscoveryExtractionAction 
             @Nonnull final AuthenticationContext authenticationContext) {
 
         // Determine what can be shown for user to select
+        final DiscoveryConfiguration configuration = discoveryConfigurationResolver != null
+                ? discoveryConfigurationResolver.resolve()
+                : authorityConfiguration;
         final Map<String, AuthenticationFlowDescriptor> flows = authenticationContext.getPotentialFlows();
         for (final String key : flows.keySet()) {
             if (ignoredFlows.contains(key)) {
                 log.debug("{} Ignoring {} from the context", getLogPrefix(), key);
                 continue;
             }
-            if (authorityConfiguration != null) {
-                addItemsUsingDiscoveryConfiguration(flows.get(key));
+            if (configuration != null) {
+                addItemsUsingDiscoveryConfiguration(flows.get(key), configuration);
             } else {
                 addItemsUsingProperties(flows.get(key));
             }

@@ -170,7 +170,10 @@ idp.discovery.storeSelection = true
 discovery will store user's selection to session and use it automatically on subsequent execution. If prior selection is not applicable Disco view is shown. 
 
 ### Version 2.1.0 and JSON configuration
-Version 2.1.0 provides alternate way to configure discovery items in a single json string and a helper to apply details of selected item in later stages. Here is an example of such string for a setup where we want to direct all requests for MFA authentication configuration to handle.
+Version 2.1.0 provides alternate way to configure discovery items as JSON and a helper to apply details of selected item in later stages. Here is an example of such configuration for a setup where we want to direct all requests for MFA authentication configuration to handle.
+
+> **Note**
+> Giving the JSON inline in the `idp.discovery.authorities` property still works exactly as it always has. As of version 2.3.0 the same JSON can instead be read from a file or an URL and refreshed while the IdP runs; see [Version 2.3.0 and discovery configuration resolvers](#version-230-and-discovery-configuration-resolvers).
 
 ```
 idp.discovery.authorities = { \
@@ -421,8 +424,6 @@ The new helper classes are in these examples used to parse upstream Authenticati
 > The following bean snippets are example and should not be used as is.
 
 ```
-<bean id="discovery.authorities" class="java.lang.String" c:_0="%{idp.discovery.authorities}" />
-
 <bean id="csc.discoveryFunction" parent="shibboleth.ContextFunctions.Scripted" factory-method="inlineScript" p:customObject-ref="discovery.authorities">
   <constructor-arg>
     <value>
@@ -528,6 +529,273 @@ Discovery can be instructed to ignore specific flows. The list of ignored flows 
 ```
 idp.discovery.ignoredFlows = authn/Disco
 ```
+
+
+## Version 2.3.0 Features
+### Version 2.3.0 and discovery configuration resolvers
+
+**File(s):** _conf/global.xml_
+**Format:** Native Spring
+
+#### Overview
+
+The JSON discovery configuration can be read from a file or fetched over HTTP by a _discovery configuration resolver_ instead of being pasted inline into `idp.discovery.authorities`. Resolvers follow the paradigm Shibboleth itself uses for metadata: the source is read once at startup, re-read periodically in the background, and the configuration currently in effect is replaced only by one that has been fetched and parsed successfully. The JSON is the same either way; a file simply holds it without the property name and the line continuations.
+
+Three resolvers are provided, all configured in _conf/global.xml_ under the bean id `shibboleth.authn.Discovery.ConfigurationResolver`. Disco uses the first of these that is configured:
+
+1. the resolver bean, if one by that name exists,
+2. the `idp.discovery.authorities` property, holding the JSON inline,
+3. the _discovery.properties_ file described above, which is not JSON at all.
+
+Nothing changes for a deployment that does not define a resolver bean.
+
+Every resolver takes the properties below, in addition to those of its own type. The source itself is a constructor argument rather than a property.
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| id | String | | Required. Also set it as a bean property, since the resolver uses it in its log messages and it is the name `reload-service` is given |
+| refreshInterval | Duration | PT1H | How often the source is checked. Zero or negative disables background refresh, leaving a forced reload as the only way to pick up changes |
+| failedRefreshInterval | Duration | PT5M | How soon a failed cycle is retried |
+| backgroundTaskTimer | Bean ID | | Optional first constructor argument, before the source. A `java.util.Timer` to schedule refreshes on. Each resolver creates a private daemon timer if none is given |
+
+#### File-Based
+
+`FilesystemDiscoveryConfigurationResolver` reads the configuration from a local file, re-reading it when its modification time moves. It takes the file as its constructor argument and adds no properties of its own.
+
+**Example** — _conf/global.xml_
+
+```
+<bean id="shibboleth.authn.Discovery.ConfigurationResolver"
+    class="fi.csc.shibboleth.authn.conf.FilesystemDiscoveryConfigurationResolver"
+    c:file="%{idp.home}/conf/authn/discovery-authorities.json"
+    p:id="shibboleth.authn.Discovery.ConfigurationResolver"
+    p:refreshInterval="PT15M" />
+```
+
+#### HTTP-Based
+
+`FileBackedHTTPDiscoveryConfigurationResolver` fetches the configuration over HTTP and keeps a copy of every successfully parsed response in a local backup file. It takes three constructor arguments, the HTTP client, the URL and the backup file path, and adds no properties of its own.
+
+Fetches are conditional, so an unchanged source costs nothing beyond the request.
+
+**Example** — _conf/global.xml_
+
+```
+<bean id="discovery.HttpClient" parent="shibboleth.HttpClientFactory"
+    p:connectionTimeout="PT10S"
+    p:socketTimeout="PT10S" />
+
+<bean id="shibboleth.authn.Discovery.ConfigurationResolver"
+    class="fi.csc.shibboleth.authn.conf.FileBackedHTTPDiscoveryConfigurationResolver"
+    c:client-ref="discovery.HttpClient"
+    c:url="https://config.example.com/discovery-authorities.json"
+    c:backupFilePath="%{idp.home}/metadata/discovery-authorities-backup.json"
+    p:id="shibboleth.authn.Discovery.ConfigurationResolver"
+    p:refreshInterval="PT1H"
+    p:failedRefreshInterval="PT5M" />
+```
+
+#### Signed JWT
+
+`SignedJWTDiscoveryConfigurationResolver` behaves exactly like the HTTP resolver, and takes the same three constructor arguments, except that it sends `Accept: application/jwt` and refuses anything whose signature does not verify. The bytes kept in the backup file are the token as received, so a configuration recovered from backup is signature checked just like a freshly fetched one.
+
+Supported, but optional except where noted, bean properties are:
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| verifier | Bean ID | | Required. The `SignedJWTVerifier` holding the verification keys |
+| configurationClaim | String | | Unset means the whole payload is the configuration object. Set it to nest the configuration under a claim of that name instead |
+| acceptHeader | String | application/jwt | The value sent in the Accept header |
+
+The verifier is a bean of its own. Its properties are:
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| credentials | List&lt;Credential&gt; | | Required. The public keys a signature may be verified against. Every credential whose key type suits the algorithm is tried in turn |
+| signatureAlgorithms | List&lt;String&gt; | RS256, RS384, RS512, ES256, ES384, ES512 | Narrow it to what the signer actually uses. Only these asymmetric algorithms are supported; `none` and the HMAC algorithms are always refused, and the token's own `alg` header can never select something outside the list |
+| requireExpiration | Boolean | false | When true a token without an `exp` claim is refused. `exp` and `nbf` are always honoured when present |
+| clockSkew | Duration | PT30S | Tolerance applied to `exp` and `nbf` |
+
+**Example** — _conf/global.xml_
+
+```
+<bean id="discovery.HttpClient" parent="shibboleth.HttpClientFactory"
+    p:connectionTimeout="PT10S"
+    p:socketTimeout="PT10S" />
+
+<bean id="discovery.SigningKey" parent="shibboleth.BasicX509CredentialFactoryBean"
+    p:certificateResource="%{idp.home}/credentials/discovery-signing.crt" />
+
+<bean id="discovery.JWTVerifier" class="fi.csc.shibboleth.authn.conf.SignedJWTVerifier"
+    p:signatureAlgorithms="#{{'RS256'}}">
+    <property name="credentials">
+        <list>
+            <ref bean="discovery.SigningKey" />
+        </list>
+    </property>
+</bean>
+
+<bean id="shibboleth.authn.Discovery.ConfigurationResolver"
+    class="fi.csc.shibboleth.authn.conf.SignedJWTDiscoveryConfigurationResolver"
+    c:client-ref="discovery.HttpClient"
+    c:url="https://config.example.com/discovery-authorities.jwt"
+    c:backupFilePath="%{idp.home}/metadata/discovery-authorities-backup.jwt"
+    p:id="shibboleth.authn.Discovery.ConfigurationResolver"
+    p:refreshInterval="PT1H"
+    p:verifier-ref="discovery.JWTVerifier" />
+```
+
+##### Supplying the verification key
+
+The verification keys go on the verifier as a list of credentials. Any credential the IdP can build will do, and the three ways below can be mixed freely in one list.
+
+###### From a JWK
+
+Requires the OP plugin, whose own credential bean this is.
+
+```
+<bean id="discovery.SigningKey" parent="shibboleth.JWKCredential"
+    p:resource="%{idp.home}/credentials/discovery-signing.jwk" />
+```
+
+###### From an X.509 certificate
+
+Only the public key inside it is used; the validity dates and the issuer are not checked.
+
+```
+<bean id="discovery.SigningKey" parent="shibboleth.BasicX509CredentialFactoryBean"
+    p:certificateResource="%{idp.home}/credentials/discovery-signing.crt" />
+```
+
+###### From a PEM public key
+
+```
+<bean id="discovery.SigningKey" parent="shibboleth.BasicResourceCredentialFactoryBean"
+    p:publicKeyInfo="%{idp.home}/credentials/discovery-signing.pub" />
+```
+
+###### Putting them on the verifier
+
+The `credentials` list takes as many as you like, of whatever mixture of the above. Every key in it is tried until one verifies the signature, which is what lets an old and a new signing key be trusted at the same time while a rollover propagates.
+
+```
+<bean id="discovery.OldSigningKey" parent="shibboleth.BasicX509CredentialFactoryBean"
+    p:certificateResource="%{idp.home}/credentials/discovery-signing-old.crt" />
+
+<bean id="discovery.NewSigningKey" parent="shibboleth.BasicResourceCredentialFactoryBean"
+    p:publicKeyInfo="%{idp.home}/credentials/discovery-signing-new.pub" />
+
+<bean id="discovery.JWTVerifier" class="fi.csc.shibboleth.authn.conf.SignedJWTVerifier">
+    <property name="credentials">
+        <list>
+            <ref bean="discovery.OldSigningKey" />
+            <ref bean="discovery.NewSigningKey" />
+        </list>
+    </property>
+</bean>
+```
+
+#### Updating the scripts
+
+The scripts shown under [Version 2.1.0 and MFA configuration](#version-210-and-mfa-configuration) take the JSON as a string and parse it on every invocation. With a resolver they take the resolver instead and ask it for the configuration in effect, which is already parsed and kept up to date in the background. Nothing else in those scripts changes.
+
+Drop the string bean
+
+```
+<bean id="discovery.authorities" class="java.lang.String" c:_0="%{idp.discovery.authorities}" />
+```
+
+and point `p:customObject-ref` at the resolver
+
+```
+<bean id="selectFirstFactor" parent="shibboleth.ContextFunctions.Scripted" factory-method="inlineScript"
+    p:customObject-ref="shibboleth.authn.Discovery.ConfigurationResolver">
+```
+
+then replace the two lines that parse the string
+
+```
+DiscoveryConfiguration = Java.type("fi.csc.shibboleth.authn.conf.DiscoveryConfiguration");
+var discoveryConfiguration = DiscoveryConfiguration.parse(custom);
+```
+
+with one that asks the resolver
+
+```
+var discoveryConfiguration = custom.resolve();
+```
+
+The same two edits apply to `csc.discoveryFunction`. `discoveryConfiguration` is the same object either way, so `getFlowMap()` and everything after it stays as it is.
+
+#### Forcing a reload
+
+To re-read the source without waiting for the next cycle and without restarting, pass the resolver's bean id to
+
+```
+bin/reload-service.sh -id shibboleth.authn.Discovery.ConfigurationResolver
+```
+
+Access is governed by the `idp.service.reload` access control policy.
+
+A forced reload runs the same cycle the background timer runs, so a failure leaves the running configuration alone. Setting `refreshInterval` to zero and reloading by hand is a legitimate combination if you would rather no polling happened at all.
+
+#### What the publisher has to produce
+
+This is the contract a third party needs in order to publish a configuration this resolver will accept. Nothing beyond it is required, and nothing beyond it is inspected.
+
+**The token.** A JWS in compact serialization: three base64url segments joined by dots, no line breaks. Leading and trailing whitespace is trimmed, so a trailing newline in the file is fine.
+
+**The header.**
+
+*   `alg` is required and must be one of `RS256`, `RS384`, `RS512`, `ES256`, `ES384`, `ES512`. `none`, the HMAC algorithms and the PSS algorithms are refused, and the header cannot select anything the deployer has not allowed.
+*   `crit` must not be present. Any `crit` at all is refused, including an empty one.
+*   `typ`, `kid`, `x5c` and everything else are ignored. Include them if it suits you. In particular a certificate in `x5c` is **not** used to establish trust, because a certificate carried inside the token being verified proves nothing on its own; trust comes only from the key the deployer configures out of band.
+
+**The payload.** The discovery configuration object itself, byte for byte what the JSON file would hold. Nothing else may be in it: with the default settings every top-level name is read as a relying party id, so an `iss` or an `exp` alongside the configuration is an error rather than a no-op.
+
+```
+{
+  "default": { "authn/MFA": [ { "acr": "https://example.com/LoginMethodOne" } ] },
+  "https://sp.example.com/shibboleth": { "authn/MFA": [ { "acr": "https://example.com/LoginLocal" } ] }
+}
+```
+
+If you want the usual JWT claims, nest the configuration under a claim instead and tell the deployer to set `p:configurationClaim` to its name.
+
+```
+{
+  "iss": "https://config.example.com",
+  "iat": 1757462400,
+  "exp": 1757548800,
+  "discovery": { "default": { "authn/MFA": [ { "acr": "https://example.com/LoginMethodOne" } ] } }
+}
+```
+
+**Claims that are checked.** Only `exp` and `nbf`, and only when present, each as a NumericDate in seconds. A token is refused once `exp` is more than the configured clock skew in the past, or while `nbf` is more than the skew in the future. `iss`, `aud`, `sub`, `iat` and `jti` are **not** validated by this module, so do not rely on them for access control. There is no replay detection and no certificate chain building; the deployer's configured public key is the whole of the trust decision.
+
+**Rolling the signing key over.** Publish the new key alongside the old one first and let the deployers pick it up, then start signing with the new key, then withdraw the old one. Every configured key is tried in turn, so both verify during the overlap.
+
+#### Reference
+
+Beans defined by this module, for use in _conf/global.xml_, are:
+
+| Name | Type | Description |
+| --- | --- | --- |
+| shibboleth.authn.Discovery.ConfigurationResolver | DiscoveryConfigurationResolver | The bean id Disco looks for. Define it as one of the three resolver classes below |
+| fi.csc.shibboleth.authn.conf.FilesystemDiscoveryConfigurationResolver | class | Reads the configuration from a local file |
+| fi.csc.shibboleth.authn.conf.FileBackedHTTPDiscoveryConfigurationResolver | class | Fetches the configuration over HTTP, with a local backup |
+| fi.csc.shibboleth.authn.conf.SignedJWTDiscoveryConfigurationResolver | class | Fetches the configuration as a signed JWT over HTTP, with a local backup |
+| fi.csc.shibboleth.authn.conf.SignedJWTVerifier | class | Holds the verification keys and the algorithms accepted for a signed JWT |
+
+Properties related to Disco, all of them older than this release, are:
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| idp.discovery.authorities | String | | The JSON inline. Used only when no resolver bean is defined |
+| idp.discovery.authority.properties | String | | Path of the legacy _discovery.properties_ file. Used only when neither of the above is configured |
+| idp.discovery.autoSelectSingleItem | Boolean | false | Bypass the Disco view when there is only one item to select |
+| idp.discovery.ignoredFlows | String | authn/Disco | Comma delimited list of flows to keep out of the Disco view |
+| idp.discovery.storeSelection | Boolean | false | Remember the user's selection in the session |
 
 
 # More helpers

@@ -55,6 +55,7 @@ THE SOFTWARE.
             class="fi.csc.shibboleth.authn.impl.PopulateDiscoveryContext" scope="prototype"
             p:httpServletRequestSupplier-ref="shibboleth.HttpServletRequestSupplier"
             p:authorityProperties="%{idp.discovery.authority.properties:}"
+            p:discoveryConfigurationResolver="#{getObject('shibboleth.authn.Discovery.ConfigurationResolver')}"
             p:authorities="%{idp.discovery.authorities:}"
             p:autoSelectSingleItem="%{idp.discovery.autoSelectSingleItem:false}"
             p:ignoredFlows="%{idp.discovery.ignoredFlows:authn/Disco}" />

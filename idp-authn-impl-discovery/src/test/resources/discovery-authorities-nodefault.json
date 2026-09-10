@@ -1,0 +1,9 @@
+{
+  "someRp": {
+    "authn/X": [
+      {
+        "acr": "urn:x"
+      }
+    ]
+  }
+}
